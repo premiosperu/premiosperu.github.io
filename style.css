@@ -47,3 +47,22 @@
             .reward-content { padding: 0 14px; }
             .modal-content { width: 100%; }
         }
+
+/* --- MEJORAS DE CARGA --- */
+
+/* 1. Evita el "salto" de altura */
+/* Esto reserva un espacio mínimo para que el footer no suba y baje de golpe */
+.rewards-container {
+    min-height: 60vh; /* Ocupa al menos el 60% de la altura de la pantalla */
+}
+
+/* 2. Animación de entrada suave (Fade In) */
+@keyframes aparecerSuave {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Aplicamos la animación a las tarjetas cuando se crean */
+.business-card {
+    animation: aparecerSuave 0.5s ease-out forwards;
+}
