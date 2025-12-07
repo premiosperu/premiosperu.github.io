@@ -1,55 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Premios</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Premios</title>
+    <style>
+        /* --- Estilos Generales --- */
+        :root {
+            --primary-color: #6366f1; /* Color principal (Indigo) */
+            --bg-color: #f3f4f6;      /* Fondo gris suave */
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --points-bg: #e0e7ff;
+            --points-text: #4338ca;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Contenedor principal */
+        .rewards-container {
+            width: 100%;
+            max-width: 600px; /* Ancho máximo de la lista */
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* Espacio entre tarjetas */
+        }
+
+        /* --- Estilos de la Tarjeta (Premio) --- */
+        .reward-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex; /* Activa las 2 columnas */
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        /* Efecto Hover (al pasar el mouse) */
+        .reward-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+                        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Columna Izquierda: Imagen */
+        .reward-image {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0; /* Evita que la imagen se aplaste */
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #eee;
+        }
+
+        .reward-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Mantiene la imagen cuadrada sin deformarla */
+        }
+
+        /* Columna Derecha: Contenido */
+        .reward-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Badge de Puntos */
+        .reward-points {
+            display: inline-block;
+            background-color: var(--points-bg);
+            color: var(--points-text);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            align-self: flex-start;
+            margin-bottom: 8px;
+        }
+
+        /* Nombre del Premio */
+        .reward-title {
+            margin: 0 0 6px 0;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        /* Descripción */
+        .reward-desc {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            line-height: 1.4;
+        }
+
+        /* Responsividad para móviles muy pequeños */
+        @media (max-width: 400px) {
+            .reward-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .reward-points {
+                align-self: center;
+            }
+            .reward-image {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100 p-4">
+    <div class="rewards-container">
+        
+        <article class="reward-card">
+            <div class="reward-image">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=150&q=80" alt="Zapatillas Deportivas">
+            </div>
+            <div class="reward-content">
+                <span class="reward-points">⚡ 2,500 Pts</span>
+                <h3 class="reward-title">Zapatillas Running Pro</h3>
+                <p class="reward-desc">Modelo ergonómico con suela de aire, ideal para maratones y entrenamiento diario.</p>
+            </div>
+        </article>
 
-  <!-- CARD 1 -->
-  <div class="flex bg-white rounded-2xl shadow-md p-4 mb-4">
-    <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=200" class="w-20 h-20 rounded-xl object-cover mr-4" alt="premio 1">
-    <div class="flex flex-col justify-between">
-      <div>
-        <span class="text-blue-600 text-sm font-semibold">120 pts</span>
-        <span class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-md">Hogar</span>
-        <div class="text-gray-800 font-semibold text-lg leading-tight mt-1">Taza Personalizada</div>
-        <div class="text-gray-500 text-sm mt-1">Cerámica premium con impresión UV resistente.</div>
-      </div>
-      <button class="mt-2 w-fit px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg shadow hover:bg-blue-700">Canjear</button>
+        <article class="reward-card">
+            <div class="reward-image">
+                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=150&q=80" alt="Reloj Inteligente">
+            </div>
+            <div class="reward-content">
+                <span class="reward-points">💎 5,000 Pts</span>
+                <h3 class="reward-title">Smartwatch Series 5</h3>
+                <p class="reward-desc">Control de ritmo cardíaco, GPS integrado y resistencia al agua hasta 50m.</p>
+            </div>
+        </article>
+
+        <article class="reward-card">
+            <div class="reward-image">
+                <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=150&q=80" alt="Auriculares">
+            </div>
+            <div class="reward-content">
+                <span class="reward-points">🎵 1,200 Pts</span>
+                <h3 class="reward-title">Auriculares Bluetooth</h3>
+                <p class="reward-desc">Cancelación de ruido activa y batería de larga duración (20 horas).</p>
+            </div>
+        </article>
+
+        <article class="reward-card">
+            <div class="reward-image">
+                <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=150&q=80" alt="Vale de Compra">
+            </div>
+            <div class="reward-content">
+                <span class="reward-points">🏷️ 500 Pts</span>
+                <h3 class="reward-title">Gift Card $20</h3>
+                <p class="reward-desc">Canjeable en toda nuestra tienda online sin monto mínimo de compra.</p>
+            </div>
+        </article>
+
     </div>
-  </div>
-
-  <!-- CARD 2 -->
-  <div class="flex bg-white rounded-2xl shadow-md p-4 mb-4">
-    <img src="https://images.unsplash.com/photo-1586201375761-83865001e31b?w=200" class="w-20 h-20 rounded-xl object-cover mr-4" alt="premio 2">
-    <div class="flex flex-col justify-between">
-      <div>
-        <span class="text-green-600 text-sm font-semibold">80 pts</span>
-        <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded-md">Cocina</span>
-        <div class="text-gray-800 font-semibold text-lg leading-tight mt-1">Afilador de cuchillos</div>
-        <div class="text-gray-500 text-sm mt-1">Compacto, práctico y durable.</div>
-      </div>
-      <button class="mt-2 w-fit px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg shadow hover:bg-green-700">Canjear</button>
-    </div>
-  </div>
-
-  <!-- CARD 3 -->
-  <div class="flex bg-white rounded-2xl shadow-md p-4 mb-4">
-    <img src="https://images.unsplash.com/photo-1616627989736-5e8d9a9d37b5?w=200" class="w-20 h-20 rounded-xl object-cover mr-4" alt="premio 3">
-    <div class="flex flex-col justify-between">
-      <div>
-        <span class="text-purple-600 text-sm font-semibold">150 pts</span>
-        <span class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-600 text-xs rounded-md">Pack</span>
-        <div class="text-gray-800 font-semibold text-lg leading-tight mt-1">Pack Hogar</div>
-        <div class="text-gray-500 text-sm mt-1">Dispensador + afilador premium.</div>
-      </div>
-      <button class="mt-2 w-fit px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg shadow hover:bg-purple-700">Canjear</button>
-    </div>
-  </div>
 
 </body>
 </html>
