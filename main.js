@@ -8,16 +8,24 @@ const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 const rewardsList = document.getElementById('rewardsList');
 
 // --- FUNCIÓN PRINCIPAL: CARGAR NEGOCIOS ---
+// main.js (Parte actualizada)
+
+// Imagen por defecto en código (Un cuadrado gris simple)
+// Esto evita errores de red porque no necesita internet para cargar.
+const IMAGEN_DEFECTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2364748b'%3ESin Logo%3C/text%3E%3C/svg%3E";
+
 async function cargarNegocios() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
 
-        // 1. Limpiamos la lista visual
-        rewardsList.innerHTML = '';
+        rewardsList.innerHTML = ''; 
 
-        // 2. Dibujamos las tarjetas de negocio
         data.forEach(negocio => {
+            // 1. VALIDACIÓN PREVIA:
+            // Si el campo 'logo' no existe o está vacío, usamos la imagen por defecto
+            let urlLogo = (negocio.logo && negocio.logo.trim() !== '') ? negocio.logo : IMAGEN_DEFECTO;
+
             const cardHTML = `
                 <article class="reward-card business-card" 
                     data-category="${negocio.categoria}" 
@@ -27,7 +35,9 @@ async function cargarNegocios() {
                     onclick="irANegocio('${negocio.usuario}')">
                     
                     <div class="reward-image">
-                        <img src="${negocio.logo}" alt="${negocio.nombre}" onerror="this.src='https://via.placeholder.com/150'">
+                        <img src="${urlLogo}" 
+                             alt="${negocio.nombre}" 
+                             onerror="this.onerror=null; this.src='${IMAGEN_DEFECTO}'">
                     </div>
                     <div class="reward-content">
                         <div class="reward-vendor">${negocio.categoria}</div>
@@ -44,12 +54,8 @@ async function cargarNegocios() {
             rewardsList.innerHTML += cardHTML;
         });
 
-        // 3. ¡AQUÍ ESTÁ LA MAGIA! Llenamos el filtro dinámicamente
-        // Pasamos toda la data y el nombre exacto de la columna en tu Excel ('categoria')
+        // Llenamos el filtro dinámicamente
         llenarFiltroDinamico(data, 'categoria', 'categoryFilter');
-        
-        // (Opcional) Si quieres que el Departamento también sea dinámico:
-        // llenarFiltroDinamico(data, 'departamento', 'depaFilter');
 
     } catch (error) {
         console.error('Error:', error);
