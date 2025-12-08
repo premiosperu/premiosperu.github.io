@@ -1,15 +1,12 @@
-// main.js - VERSIÓN SIN SALTOS (CON LOADER)
+// main.js - VERSIÓN FINAL ESTANDARIZADA
 
 // 1. CONFIGURACIÓN
 const SHEET_ID = '1ew2qtysq4rwWkL7VU2MTaOv2O3tmD28kFYN5eVHCiUY'; 
 const SHEET_NAME = 'negocios'; 
 const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
-// HTML del Loader (Círculo dando vueltas)
-const HTML_LOADER = '<div class="mi-loader"></div>';
-
-// Imágenes
 const IMAGEN_DEFECTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2364748b'%3ESin Logo%3C/text%3E%3C/svg%3E";
+const HTML_LOADER = '<div class="mi-loader"></div>';
 
 const container = document.getElementById('rewardsList');
 const filtrosContainer = document.getElementById('shortcode-filtros');
@@ -35,40 +32,54 @@ function irANegocio(usuario) {
 window.addEventListener('popstate', manejarRuta);
 
 
-// --- MODO DIRECTORIO ---
+// --- MODO DIRECTORIO (HOME) ---
 async function cargarDirectorio() {
     if (filtrosContainer) filtrosContainer.style.display = 'block';
     if (welcomeMsg) welcomeMsg.style.display = 'none';
     
-    // Muestra el Loader en vez de texto feo
     container.innerHTML = HTML_LOADER;
 
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
-        
-        container.innerHTML = ''; // Borra el loader
+        container.innerHTML = ''; 
 
         data.forEach(negocio => {
-            let urlLogo = (negocio.logo && negocio.logo.trim() !== '') ? negocio.logo : generarAvatar(negocio.nombre);
+            // Logo inteligente
+            let urlLogo;
+            if (negocio.logo && negocio.logo.trim() !== '') {
+                urlLogo = negocio.logo;
+            } else {
+                urlLogo = generarAvatar(negocio.nombre);
+            }
+            const backupLogo = generarAvatar(negocio.nombre);
 
+            // TARJETA ESTÁNDAR (Idéntica a la de premios)
+            // Hemos quitado los estilos inline raros.
             const cardHTML = `
                 <article class="reward-card business-card" 
                     data-category="${negocio.categoria}" 
                     data-name="${negocio.nombre}"
                     data-distrito="${negocio.distrito}"
                     data-depa="${negocio.departamento}"
-                    onclick="irANegocio('${negocio.usuario}')"
-                    style="align-items: flex-start; padding: 15px;">
+                    onclick="irANegocio('${negocio.usuario}')">
                     
-                    <div class="reward-image" style="width: 110px; height: 110px;">
-                        <img src="${urlLogo}" alt="${negocio.nombre}" onerror="this.onerror=null; this.src='${generarAvatar(negocio.nombre)}'" style="border-radius: 8px;">
+                    <div class="reward-image">
+                        <img src="${urlLogo}" 
+                             alt="${negocio.nombre}" 
+                             onerror="this.onerror=null; this.src='${backupLogo}'">
                     </div>
-                    <div class="reward-content" style="padding: 0 0 0 15px; justify-content: space-between;">
-                        <h3 class="reward-title" style="font-size: 1.3rem; margin: 0 0 4px 0; line-height: 1.1;">${negocio.nombre}</h3>
-                        <div class="reward-vendor" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; font-weight: normal;">${negocio.categoria}</div>
-                        <p class="reward-desc" style="margin-bottom: 12px; font-size: 0.9rem;">${negocio.distrito} - ${negocio.provincia} - ${negocio.departamento}</p>
-                        <div style="background-color: var(--primary); color: white; text-align: center; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 1.1rem; width: 100%; cursor: pointer;">Ver premios</div>
+
+                    <div class="reward-content">
+                        <div class="reward-vendor">${negocio.categoria}</div>
+                        
+                        <h3 class="reward-title">${negocio.nombre}</h3>
+                        
+                        <span class="reward-points">Ver premios</span>
+                        
+                        <p class="reward-desc">
+                            ${negocio.distrito} - ${negocio.provincia}
+                        </p>
                     </div>
                 </article>
             `;
@@ -85,11 +96,9 @@ async function cargarDirectorio() {
 }
 
 
-// --- MODO PERFIL ---
+// --- MODO PERFIL NEGOCIO ---
 async function cargarPerfilNegocio(usuarioSlug) {
     if (filtrosContainer) filtrosContainer.style.display = 'none';
-    
-    // Loader inicial del perfil
     container.innerHTML = HTML_LOADER;
 
     try {
@@ -102,6 +111,7 @@ async function cargarPerfilNegocio(usuarioSlug) {
             return;
         }
 
+        // CORRECCIÓN: Usamos el nombre exacto de tu columna 'tabla_premios_clientes'
         const idHojaExterna = negocio.tabla_premios_clientes; 
 
         if (!idHojaExterna) {
@@ -125,15 +135,12 @@ async function cargarPerfilNegocio(usuarioSlug) {
             </div>
             
             <h3 style="margin-bottom:15px; padding-left:10px; border-left: 4px solid var(--primary); animation: aparecerSuave 0.6s ease-out;">Catálogo de Premios</h3>
-            
             <div id="listaPremiosNegocio" class="rewards-container">
                 ${HTML_LOADER} 
             </div>
         `;
 
         container.innerHTML = headerHTML;
-
-        // Cargar premios
         cargarPremiosDeNegocio(idHojaExterna);
 
     } catch (error) {
@@ -142,7 +149,7 @@ async function cargarPerfilNegocio(usuarioSlug) {
     }
 }
 
-// --- CARGAR PREMIOS (Lista interna) ---
+// --- CARGAR PREMIOS ---
 async function cargarPremiosDeNegocio(sheetId) {
     const urlPremios = `https://opensheet.elk.sh/${sheetId}/premios`;
     const divLista = document.getElementById('listaPremiosNegocio');
@@ -150,8 +157,7 @@ async function cargarPremiosDeNegocio(sheetId) {
     try {
         const res = await fetch(urlPremios);
         const premios = await res.json();
-
-        divLista.innerHTML = ''; // Quitar loader
+        divLista.innerHTML = ''; 
 
         if(premios.length === 0) {
             divLista.innerHTML = '<p style="text-align:center; width:100%">No hay premios disponibles.</p>';
@@ -159,9 +165,15 @@ async function cargarPremiosDeNegocio(sheetId) {
         }
 
         premios.forEach(premio => {
-            // Nota: Aquí usamos la misma clase .reward-card para heredar la animación del CSS
             const card = `
-                <article class="reward-card" style="cursor:default;">
+                <article class="reward-card" onclick="abrirModal({
+                        imagen: '${premio.imagen || IMAGEN_DEFECTO}',
+                        titulo: '${premio.nombre}',
+                        puntos: '${premio.puntos}',
+                        negocio: 'Canje',
+                        categoria: '${premio.categoria}',
+                        descripcion: '${premio.descripcion_larga || premio.descripcion_corta}'
+                    })">
                     <div class="reward-image">
                         <img src="${premio.imagen}" onerror="this.src='${IMAGEN_DEFECTO}'">
                     </div>
@@ -169,7 +181,7 @@ async function cargarPremiosDeNegocio(sheetId) {
                         <div class="reward-vendor">${premio.categoria || 'General'}</div>
                         <h3 class="reward-title">${premio.nombre}</h3>
                         <span class="reward-points">${premio.puntos} Puntos</span>
-                        <p class="reward-desc">${premio['descripcion_corta'] || premio.descripcion_corta || ''}</p>
+                        <p class="reward-desc">${premio.descripcion_corta || ''}</p>
                     </div>
                 </article>
             `;
@@ -191,14 +203,13 @@ async function consultarPuntos(sheetId) {
         resultadoDiv.innerHTML = '<span style="color:red">Escribe tu DNI</span>';
         return;
     }
-
-    resultadoDiv.innerHTML = '<span style="color:#64748b">Buscando...</span>'; // Texto sutil mientras busca
-    
+    resultadoDiv.innerHTML = '<span style="color:#64748b">Buscando...</span>';
     const urlClientes = `https://opensheet.elk.sh/${sheetId}/clientes`;
 
     try {
         const res = await fetch(urlClientes);
         const clientes = await res.json();
+        console.log("Clientes:", clientes);
 
         const cliente = clientes.find(c => {
             const valorEnFila = c.dni || c.DNI || c.Dni;
@@ -211,7 +222,6 @@ async function consultarPuntos(sheetId) {
         } else {
             resultadoDiv.innerHTML = `<span style="color:#64748b">El DNI ${dniBuscado} no tiene puntos aquí.</span>`;
         }
-
     } catch (e) {
         resultadoDiv.innerHTML = 'Error de conexión.';
     }
