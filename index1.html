@@ -9,236 +9,105 @@
         :root {
             --primary: #004e92; /* Azul Industrial */
             --secondary: #000428; /* Azul Oscuro */
-            --accent: #eef2f3; /* Gris muy claro */
+            --accent: #eef2f3; 
             --text-dark: #333;
             --text-light: #666;
-            --danger: #d32f2f;
             --success: #2e7d32;
             --border: #ddd;
-            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-        
-        body { background-color: #f8f9fa; color: var(--text-dark); }
+        body { background-color: #f8f9fa; color: var(--text-dark); padding-bottom: 50px;}
 
-        /* --- HEADER & CONTROLS --- */
+        /* --- HEADER --- */
         header {
-            background: white;
-            padding: 20px 40px;
+            background: white; padding: 20px 40px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: sticky; top: 0; z-index: 100;
         }
 
         .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            flex-wrap: wrap;
-            gap: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto; flex-wrap: wrap; gap: 15px;
         }
 
         .brand h1 { font-size: 1.5rem; color: var(--secondary); letter-spacing: 1px; }
         .brand span { color: var(--primary); font-weight: 300; }
 
         .controls {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-            align-items: center;
+            display: flex; gap: 10px; flex: 1; justify-content: flex-end; align-items: center;
         }
 
-        /* Inputs Estilizados */
+        /* Inputs */
         input#search {
-            padding: 10px 15px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            width: 300px;
-            font-size: 0.9rem;
-            outline: none;
+            padding: 10px 15px; border: 1px solid var(--border); border-radius: 4px;
+            width: 300px; font-size: 0.9rem; outline: none;
         }
         input#search:focus { border-color: var(--primary); }
 
         select {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
+            padding: 10px; border: 1px solid var(--border); border-radius: 4px;
+            background: white; cursor: pointer;
         }
 
-        /* Toggle Buttons */
-        .view-toggle {
-            display: flex;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .view-btn {
-            background: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            color: var(--text-light);
-            transition: 0.2s;
-        }
-        .view-btn.active { background: var(--primary); color: white; }
+        /* --- CATALOG GRID --- */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
 
-        /* --- CATALOG GRID SYSTEM --- */
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        #catalog {
-            display: grid;
-            gap: 20px;
-            /* Default: GRID VIEW */
+        #grid {
+            display: grid; gap: 20px;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
 
-        /* --- PRODUCT CARD DESIGN (GRID) --- */
+        /* --- CARD DESIGN --- */
         .card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
+            background: white; border: 1px solid var(--border); border-radius: 8px;
+            overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; flex-direction: column;
         }
-
         .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border-color: var(--primary);
+            transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary);
         }
 
-/* --- CORRECCIÓN DE IMÁGENES (FULL WIDTH) --- */
+        /* Imagen Full Width */
         .card-img {
-            /* Aumentamos un poco la altura para que luzca mejor */
-            height: 200px; 
-            width: 100%;
-            background: #eee; /* Fondo gris suave mientras carga */
-            padding: 0; /* Quitamos el relleno interno */
-            margin: 0;
-            border-bottom: 1px solid #eee;
-            position: relative;
+            height: 200px; width: 100%; background: #eee;
+            position: relative; border-bottom: 1px solid #eee;
         }
-
         .card-img img {
-            width: 100%;
-            height: 100%;
-            /* 'cover' es la clave: recorta la imagen para llenar todo el hueco sin deformarla */
-            object-fit: cover; 
-            display: block;
+            width: 100%; height: 100%; object-fit: cover; display: block;
         }
 
         .card-body { padding: 15px; display: flex; flex-direction: column; flex: 1; }
 
         .badge-cat {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--primary); font-weight: 700; margin-bottom: 5px;
         }
 
         .card-title { font-size: 1.1rem; margin-bottom: 10px; color: var(--secondary); font-weight: 600; }
         
-        /* Specs Table Mini */
-        .specs {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            margin-bottom: 15px;
-            background: #f9f9f9;
-            padding: 8px;
-            border-radius: 4px;
+        .desc {
+            font-size: 0.85rem; color: var(--text-light); margin-bottom: 15px;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            line-height: 1.4;
         }
-        .spec-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .spec-row strong { color: var(--text-dark); }
 
         .price-row {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid #f0f0f0;
+            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+            padding-top: 15px; border-top: 1px solid #f0f0f0;
         }
 
         .price { font-size: 1.2rem; font-weight: bold; color: var(--text-dark); }
-        .unit { font-size: 0.8rem; font-weight: normal; color: var(--text-light); }
-
+        
         .btn-cta {
-            background: var(--success);
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            background: var(--success); color: white; text-decoration: none;
+            padding: 8px 15px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none;
         }
         .btn-cta:hover { background: #1b5e20; }
 
-        /* --- LIST VIEW OVERRIDES --- */
-        #catalog.list-view {
-            grid-template-columns: 1fr; /* Una sola columna */
-        }
+        /* Mensajes de estado */
+        .loading, .error { grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; }
 
-        #catalog.list-view .card {
-            flex-direction: row; /* Horizontal */
-            height: auto;
-            align-items: center;
-        }
-
-        #catalog.list-view .card-img {
-            width: 120px;
-            height: 120px;
-            border-bottom: none;
-            border-right: 1px solid #f0f0f0;
-        }
-
-        #catalog.list-view .card-body {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        
-        #catalog.list-view .info-block { flex: 2; }
-        #catalog.list-view .price-row { 
-            border-top: none; 
-            flex-direction: column; 
-            align-items: flex-end; 
-            gap: 10px;
-            padding-top: 0;
-            flex: 1;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .top-bar { flex-direction: column; align-items: stretch; }
-            input#search { width: 100%; }
-            .controls { flex-wrap: wrap; }
-            /* Force Grid on mobile even if list is selected for better UX */
-            #catalog.list-view .card { flex-direction: column; }
-            #catalog.list-view .card-img { width: 100%; height: 180px; border-right: none; border-bottom: 1px solid #f0f0f0; }
-            #catalog.list-view .card-body { flex-direction: column; align-items: stretch; }
-            #catalog.list-view .price-row { flex-direction: row; align-items: center; border-top: 1px solid #f0f0f0; padding-top: 15px;}
-        }
-
-        .empty-state { text-align: center; padding: 50px; color: var(--text-light); width: 100%; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
@@ -249,199 +118,146 @@
             <h1>QUIMICA<span>PRO</span></h1>
         </div>
         <div class="controls">
-            <input type="text" id="search" placeholder="Buscar por nombre, CAS o uso...">
-            <select id="sortFilter">
-                <option value="name">Nombre A-Z</option>
-                <option value="priceAsc">Precio: Bajo a Alto</option>
-                <option value="priceDesc">Precio: Alto a Bajo</option>
+            <input type="text" id="search" placeholder="Buscar insumo, CAS...">
+            <select id="sort">
+                <option value="rel">Relevancia</option>
+                <option value="asc">Precio: Menor a Mayor</option>
+                <option value="desc">Precio: Mayor a Menor</option>
             </select>
-            <div class="view-toggle">
-                <button class="view-btn active" onclick="setView('grid')">☒</button>
-                <button class="view-btn" onclick="setView('list')">☰</button>
-            </div>
         </div>
     </div>
 </header>
 
-<div class="container">
-    <div id="catalog">
-        </div>
-</div>
+<main class="container">
+    <div id="grid"></div>
+</main>
 
 <script>
-
     // --- 1. CONFIGURACIÓN ---
-    // PEGA AQUÍ TU ENLACE DE GOOGLE SHEETS (Debe terminar en ...output=csv)
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR67aoFMPN7IdCJuST7JW3lweWiT_aUucVi8qO1IztTDNLCxThrGbzu4NoQ8LZoDknfzq_l8opyzcEr/pub?gid=0&single=true&output=csv'; 
     
-    const CACHE_KEY = 'catalogo_quimico_db';
-    const CACHE_TIME = 'catalogo_quimico_time';
-    const CACHE_HORAS = 1; // ¿Cuántas horas guardar los datos en el celular?
+    const CACHE_KEY = 'quimica_db_v1';
+    const CACHE_TIME = 'quimica_time_v1';
+    const CACHE_HORAS = 1; 
 
-    // --- 2. REFERENCIAS DOM ---
+    // --- 2. REFERENCIAS DOM (Ahora coinciden con el HTML) ---
     const grid = document.getElementById('grid');
     const searchInput = document.getElementById('search');
-    const sortInput = document.getElementById('sort'); // Asegúrate que tu HTML tenga este ID o cámbialo aquí
+    const sortInput = document.getElementById('sort');
 
     // --- 3. ESTADO GLOBAL ---
     let products = [];
 
     // --- 4. INICIALIZACIÓN ---
     async function init() {
-        grid.innerHTML = '<p class="loading" style="grid-column:1/-1; text-align:center">Cargando catálogo en tiempo real...</p>';
-        
+        grid.innerHTML = '<p class="loading">Cargando catálogo actualizado...</p>';
         try {
-            // Obtenemos datos (ya sea del caché o de Google)
             products = await getSmartData();
-            
-            // Renderizamos
             render(products);
-            
-            // Activamos los "listeners" para buscar y ordenar
             setupListeners();
-            
         } catch (e) {
-            console.error("Error grave:", e);
-            grid.innerHTML = '<p class="error" style="color:red; text-align:center">Hubo un error cargando los datos. Por favor recarga la página.</p>';
+            console.error(e);
+            grid.innerHTML = '<p class="error">Hubo un error cargando los datos. Verifica tu conexión.</p>';
         }
     }
 
-    // --- 5. LÓGICA DE DATOS INTELIGENTE (Smart Data) ---
+    // --- 5. LÓGICA SMART DATA (Igual que antes) ---
     async function getSmartData() {
         const now = new Date().getTime();
         const storedTime = localStorage.getItem(CACHE_TIME);
         const storedData = localStorage.getItem(CACHE_KEY);
         const maxTime = CACHE_HORAS * 60 * 60 * 1000;
 
-        // A. REVISAR CACHÉ: Si existe y es reciente, úsalo.
         if (storedData && storedTime && (now - storedTime < maxTime)) {
-            console.log("⚡ Usando datos guardados (Sin consumo de red)");
+            console.log("⚡ Usando caché local");
             return JSON.parse(storedData);
         }
 
-        // B. DESCARGAR: Si no hay caché o es viejo, ve a Google.
-        console.log("🌐 Descargando datos frescos de Google Sheets...");
+        console.log("🌐 Descargando de Google Sheets...");
         const response = await fetch(CSV_URL);
+        const text = await response.text();
+        const data = csvToJson(text);
         
-        if (!response.ok) throw new Error("No se pudo conectar con Google Sheets");
-        
-        const text = await response.text(); // Google nos da texto plano (CSV)
-        const data = csvToJson(text);       // Lo convertimos a Objetos
-        
-        // C. GUARDAR: Actualizamos el caché local
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
         localStorage.setItem(CACHE_TIME, now);
-        
         return data;
     }
 
-    // --- 6. CONVERTIDOR CSV A JSON (El motor) ---
+    // --- 6. CONVERTIDOR CSV (Igual que antes) ---
     function csvToJson(csv) {
         const lines = csv.split('\n').filter(line => line.trim() !== '');
-        if (lines.length < 2) return []; // Si no hay datos
-
-        // Extraer cabeceras y limpiarlas (quitamos comillas y espacios)
+        if (lines.length < 2) return [];
         const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
         
-        const result = [];
-
-        for (let i = 1; i < lines.length; i++) {
-            // Esta expresión regular maneja comas dentro de comillas (ej: "Producto, Rojo")
-            const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-            
-            if (row) {
-                let obj = {};
-                headers.forEach((header, index) => {
-                    // Limpiamos comillas extra del valor
-                    let val = row[index] ? row[index].replace(/^"|"$/g, '').trim() : '';
-                    obj[header] = val;
-                });
-                result.push(obj);
-            }
-        }
-        return result;
+        return lines.slice(1).map(line => {
+            const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (!row) return null;
+            let obj = {};
+            headers.forEach((h, i) => {
+                let val = row[i] ? row[i].replace(/^"|"$/g, '').trim() : '';
+                obj[h] = val;
+            });
+            return obj;
+        }).filter(item => item !== null);
     }
 
-    // --- 7. RENDERIZADO (Diseño) ---
+    // --- 7. RENDERIZADO (Adaptado a TU diseño CSS) ---
     function render(data) {
         if (data.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center">No se encontraron productos.</p>';
+            grid.innerHTML = '<p class="error">No se encontraron productos.</p>';
             return;
         }
 
+        // AQUÍ ESTÁ LA MAGIA: Uso tus clases CSS (.card-img, .badge-cat, etc.)
         grid.innerHTML = data.map(p => `
             <article class="card">
-                <div class="img-box">
+                <div class="card-img">
                     <img src="${p.imagen || 'https://placehold.co/400x300?text=Sin+Foto'}" alt="${p.nombre}" loading="lazy">
-                    ${p.categoria ? `<span class="badge">${p.categoria}</span>` : ''}
                 </div>
                 <div class="card-body">
-                    <h3 class="title">${p.nombre}</h3>
+                    ${p.categoria ? `<div class="badge-cat">${p.categoria}</div>` : ''}
+                    <h3 class="card-title">${p.nombre}</h3>
+                    <p class="desc">${p.descripcion || ''}</p>
                     
-                    <p style="font-size:0.85rem; color:#666; line-height:1.4; margin-bottom:10px;">
-                        ${p.descripcion || 'Sin descripción disponible.'}
-                    </p>
-
-                    <div class="price-section">
-                        <div>
-                            <div class="price">$${parseFloat(p.precio || 0).toFixed(2)}</div>
-                        </div>
-                        <button class="btn" onclick="cotizar('${p.nombre}')">Cotizar</button>
+                    <div class="price-row">
+                        <div class="price">$${parseFloat(p.precio || 0).toFixed(2)}</div>
+                        <button class="btn-cta" onclick="cotizar('${p.nombre}')">Cotizar</button>
                     </div>
                 </div>
             </article>
         `).join('');
     }
 
-    // --- 8. FUNCIONALIDADES EXTRA ---
+    // --- 8. FUNCIONES DE AYUDA ---
     function setupListeners() {
-        // Buscador
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = products.filter(p => 
+        const filterFn = () => {
+            const term = searchInput.value.toLowerCase();
+            const sort = sortInput.value;
+            
+            let filtered = products.filter(p => 
                 (p.nombre && p.nombre.toLowerCase().includes(term)) || 
                 (p.descripcion && p.descripcion.toLowerCase().includes(term)) ||
                 (p.categoria && p.categoria.toLowerCase().includes(term))
             );
-            
-            // Aplicar ordenamiento actual a la búsqueda
-            applySort(filtered);
-        });
 
-        // Ordenar
-        if(sortInput) {
-            sortInput.addEventListener('change', () => applySort(getCurrentList()));
-        }
+            if (sort === 'asc') filtered.sort((a,b) => parseFloat(a.precio) - parseFloat(b.precio));
+            if (sort === 'desc') filtered.sort((a,b) => parseFloat(b.precio) - parseFloat(a.precio));
+
+            render(filtered);
+        };
+
+        searchInput.addEventListener('input', filterFn);
+        sortInput.addEventListener('change', filterFn);
     }
 
-    // Helper para obtener lista actual (filtrada o completa)
-    function getCurrentList() {
-        const term = searchInput.value.toLowerCase();
-        if(!term) return [...products];
-        return products.filter(p => 
-            p.nombre.toLowerCase().includes(term) || 
-            p.descripcion.toLowerCase().includes(term)
-        );
-    }
-
-    function applySort(lista) {
-        const criteria = sortInput ? sortInput.value : 'rel';
-        
-        if (criteria === 'asc') lista.sort((a, b) => parseFloat(a.precio) - parseFloat(b.precio));
-        if (criteria === 'desc') lista.sort((a, b) => parseFloat(b.precio) - parseFloat(a.precio));
-        
-        render(lista);
-    }
-
-    // Función simple para el botón
     function cotizar(nombre) {
-        const msg = `Hola, me interesa: ${nombre}`;
-        window.open(`https://wa.me/TU_NUMERO?text=${encodeURIComponent(msg)}`, '_blank');
+        // Pon tu número aquí
+        const telefono = "51999999999"; 
+        const msg = `Hola, me interesa el producto: ${nombre}`;
+        window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // ¡ARRANCAMOS!
     init();
-
 </script>
 </body>
 </html>
