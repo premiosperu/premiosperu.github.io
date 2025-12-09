@@ -126,11 +126,36 @@
     }
 
 
-    // ==========================================
+// ==========================================
     // E. LÓGICA DE NEGOCIO (Google Sheets)
     // ==========================================
     let allProducts = [];
     let activeCategory = 'all';
+
+    // ==========================================
+    // NUEVA FUNCIÓN AUXILIAR: Convierte enlaces de Drive a enlaces directos
+    // ==========================================
+    function convertirDriveLink(url) {
+        if (!url || typeof url !== 'string') return url;
+
+        // Si ya parece ser un enlace directo de descarga, lo dejamos.
+        if (url.includes('drive.google.com/uc?export=view&id=')) {
+            return url;
+        }
+
+        // Buscamos el ID en los enlaces de compartir o visualización
+        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)\/view/) ||
+                    url.match(/id=([a-zA-Z0-9_-]+)/);
+
+        if (match && match[1]) {
+            const fileId = match[1];
+            // Construye el enlace directo usando el patrón 'uc?export=view&id='
+            return `https://drive.google.com/uc?export=view&id=${fileId}`;
+        }
+
+        // Si no es un enlace de Drive reconocible, devolvemos la URL original.
+        return url;
+    }
 
     function iniciarSistema() {
         // Construimos el HTML primero
@@ -203,7 +228,16 @@
             let precioDisplay = parseFloat(precioRaw).toFixed(2);
             if(isNaN(precioDisplay)) precioDisplay = precioRaw;
             
-            const img = (p.imagen && (p.imagen.startsWith('http') || p.imagen.startsWith('/'))) ? p.imagen : 'https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=Sin+Imagen';
+            // Lógica de validación y conversión del enlace de imagen
+            let img = (p.imagen && (p.imagen.startsWith('http') || p.imagen.startsWith('/'))) ? p.imagen : 'https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=Sin+Imagen';
+            
+            // Aplicamos la conversión a enlaces de Google Drive
+            img = convertirDriveLink(img); 
+
+            // Si la URL convertida no empieza con http, usamos el placeholder
+            if(!img.startsWith('http') && !img.startsWith('/')) {
+                img = 'https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=Sin+Imagen';
+            }
 
             card.innerHTML = `
                 <div class="relative mb-4 overflow-hidden rounded-xl bg-gray-50 aspect-[4/3] group">
@@ -264,5 +298,3 @@
         const allBtn = document.querySelector('#categoryContainer button');
         if(allBtn) allBtn.click();
     };
-
-})();
