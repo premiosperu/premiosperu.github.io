@@ -309,14 +309,10 @@
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1YVBKvEpihEF9yq62zVIoJvHPolwCiZ3CWz54GyfuPeE/edit?usp=sharing"; // Tu enlace de edición aquí
         const WHATSAPP_PHONE = "51907597089"; // TU NÚMERO
 
-        // --- 2. LÓGICA MODO ADMIN ---
+// --- 2. LÓGICA MODO ADMIN ---
+        // Si la URL termina en #admin, redirige directo a la hoja de cálculo
         if (window.location.hash === '#admin') {
-            const pass = prompt("🔒 Admin Importaciones:\nClave de acceso:");
-            if (pass === "admin123") { // Cambia tu clave
-                window.location.href = GOOGLE_SHEET_EDIT_URL;
-            } else {
-                history.pushState("", document.title, window.location.pathname);
-            }
+            window.location.href = GOOGLE_SHEET_EDIT_URL;
         }
 
         // --- DATOS DE EJEMPLO (IMPORTACIONES) ---
