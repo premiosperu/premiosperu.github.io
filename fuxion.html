@@ -542,17 +542,7 @@
         // --- 2. LÓGICA "MODO ADMIN" (REDIRECCIÓN) ---
         // Esto verifica si la URL termina en #admin
         if (window.location.hash === '#admin') {
-            // Opcional: Pedir contraseña sencilla para que no entre cualquiera
-            // Si quieres acceso directo, borra el if(prompt...) y deja solo el window.location
-            const pass = prompt("🔒 Área de Cliente:\nIngresa la clave para editar tu catálogo:");
-            if (pass === "fuxion2024") { // Contraseña simple
                 window.location.href = GOOGLE_SHEET_EDIT_URL;
-            } else {
-                alert("Contraseña incorrecta.");
-                history.pushState("", document.title, window.location.pathname); // Quita el #admin de la URL
-            }
-            // NOTA: Si prefieres que sea directo sin clave, borra todo lo de arriba y pon solo:
-            // window.location.href = GOOGLE_SHEET_EDIT_URL;
         }
         
         // --- DATOS DE RESPALDO (Por si falla la hoja) ---
