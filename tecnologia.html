@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechZone | Smart Store</title>
+    <meta name="description" content="Lo último en laptops, smartphones y tablets.">
+    
+    <style>
+        /* --- 1. VARIABLES (Tema Tech) --- */
+        :root {
+            --primary: #2563EB; /* Azul Eléctrico */
+            --primary-dark: #1E40AF;
+            --secondary: #0F172A; /* Azul Noche (Casi negro) */
+            --accent: #F59E0B; /* Ámbar para ofertas/badges */
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #334155;
+            --border: #E2E8F0;
+            
+            --radius: 8px; /* Bordes semiredondos, técnicos */
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.1);
+            
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding-bottom: 80px;
+        }
+
+        /* --- 2. HEADER --- */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+
+        header {
+            background: var(--secondary);
+            color: white;
+            position: sticky; top: 0; z-index: 100;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+
+        .logo {
+            font-size: 1.5rem; font-weight: 800; color: white;
+            display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px;
+        }
+        .logo span { color: var(--primary); background: white; padding: 2px 6px; border-radius: 4px; }
+
+        .cart-trigger {
+            position: relative; cursor: pointer; padding: 8px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            transition: var(--transition);
+        }
+        .cart-trigger:hover { background: rgba(255,255,255,0.2); }
+        
+        .cart-count {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--primary); color: white;
+            font-size: 0.75rem; font-weight: bold;
+            width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--secondary);
+        }
+
+        /* --- 3. HERO --- */
+        .hero {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            color: white; text-align: center; padding: 60px 20px;
+            margin-bottom: 30px; border-radius: 0 0 20px 20px;
+            position: relative; overflow: hidden;
+        }
+        /* Decoración de fondo abstracta */
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 60%);
+            animation: pulse 10s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; position: relative; }
+        .hero p { font-size: 1.1rem; color: #94A3B8; max-width: 600px; margin: 0 auto; position: relative; }
+
+        /* --- 4. CONTROLS --- */
+        .controls { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        
+        .search-box { flex: 1; min-width: 280px; }
+        .search-box input {
+            width: 100%; padding: 12px 15px;
+            border: 1px solid var(--border); border-radius: var(--radius);
+            font-size: 1rem; outline: none; transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .search-box input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
+
+        .sort-select {
+            padding: 0 20px; border-radius: var(--radius); border: 1px solid var(--border);
+            background: white; cursor: pointer; color: var(--text-main); font-weight: 600;
+        }
+
+        .filters-container {
+            display: flex; gap: 10px; overflow-x: auto;
+            padding-bottom: 15px; margin-bottom: 35px;
+            scrollbar-width: none;
+        }
+        
+        .filter-btn {
+            background: white; border: 1px solid var(--border);
+            padding: 8px 16px; border-radius: 50px;
+            cursor: pointer; font-size: 0.9rem; font-weight: 600;
+            color: var(--text-main); transition: var(--transition);
+        }
+        .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* --- 5. GRID & CARDS --- */
+        .products-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            border: 1px solid var(--border); overflow: hidden;
+            transition: var(--transition); display: flex; flex-direction: column;
+            position: relative;
+        }
+        .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+
+        .img-container {
+            width: 100%; height: 200px; background: #F1F5F9;
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        .img-container img {
+            width: 100%; height: 100%; object-fit: contain; padding: 20px; /* Padding para que el producto no toque bordes */
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover .img-container img { transform: scale(1.08); }
+
+        .category-badge {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(15, 23, 42, 0.8); color: white;
+            padding: 4px 10px; border-radius: 4px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+        }
+
+        .card-body { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; border-top: 1px solid var(--border); }
+
+        .product-title { 
+            font-size: 1rem; font-weight: 700; margin-bottom: 5px; 
+            color: var(--secondary); line-height: 1.4; height: 44px; overflow: hidden;
+        }
+        
+        .product-desc { 
+            font-size: 0.85rem; color: #64748B; margin-bottom: 15px; 
+            flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .price-box { margin-bottom: 15px; }
+        .price { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+        .price-label { font-size: 0.75rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .actions { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+
+        .btn { padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 0.9rem; }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--secondary); }
+        .btn-outline:hover { background: #F8FAFC; border-color: var(--secondary); }
+        
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        /* --- 6. CART SIDEBAR --- */
+        .cart-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 999; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .cart-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .cart-sidebar {
+            position: fixed; top: 0; right: 0; width: 100%; max-width: 400px;
+            height: 100%; background: white; z-index: 1000;
+            transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; box-shadow: -10px 0 25px rgba(0,0,0,0.1);
+        }
+        .cart-sidebar.open { transform: translateX(0); }
+
+        .cart-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; }
+        .cart-items { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        
+        .cart-item { display: flex; gap: 12px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .cart-item img { width: 50px; height: 50px; object-fit: contain; background: #F1F5F9; border-radius: 4px; padding: 5px; }
+        
+        .qty-controls { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+        .qty-btn { width: 24px; height: 24px; background: white; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+
+        .cart-footer { padding: 20px; background: white; border-top: 1px solid var(--border); }
+        .btn-whatsapp {
+            background: #25D366; color: white; width: 100%; padding: 15px;
+            border-radius: 6px; font-weight: bold; border: none; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.2s; padding: 20px;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px;
+            max-width: 600px; width: 100%; position: relative;
+        }
+        .tech-spec-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.9rem; }
+        
+        .loader { text-align: center; padding: 40px; color: #94A3B8; }
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .products-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                TECH<span>ZONE</span>
+            </div>
+            <div class="cart-trigger" onclick="toggleCart()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <div class="cart-count" id="cartCount">0</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Next Gen Technology</h1>
+            <p>Encuentra los dispositivos más potentes para trabajo, gaming y creatividad.</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar laptop, celular, modelo...">
+            </div>
+            <select id="sortSelect" class="sort-select" onchange="applyFilters()">
+                <option value="default">Más Relevantes</option>
+                <option value="price-asc">Precio: Menor a Mayor</option>
+                <option value="price-desc">Precio: Mayor a Menor</option>
+            </select>
+        </div>
+
+        <div class="filters-container" id="categoryFilters"></div>
+
+        <div id="loading" class="loader">Procesando catálogo digital...</div>
+        <div id="productsGrid" class="products-grid"></div>
+        <div id="noResults" class="loader hidden">No se encontraron dispositivos.</div>
+    </main>
+
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Orden de Compra</h3>
+            <span onclick="toggleCart()" style="cursor:pointer; font-size: 1.5rem;">&times;</span>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:1.2rem; font-weight:800; color:var(--secondary);">
+                <span>Total</span>
+                <span id="cartTotal">S/ 0.00</span>
+            </div>
+            <button class="btn-whatsapp" onclick="checkoutWhatsApp()">
+                Confirmar Stock en WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()" style="position:absolute; right:20px; top:20px; font-size:1.5rem; cursor:pointer; color:#999;">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQppkKKBkAMZi8qGFQ9KfcRXL4GW9AU5_8ZVnCPJigdXuyDKviLpSe2ZHCM4eu_RzMeJ1z-pQ-67J7-/pub?gid=0&single=true&output=csv"; 
+        const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1Juf-Ik_dQNfSmdM5yBNqX_1xmQadCBu5b6BbqS2SpTE/edit?gid=0#gid=0"; 
+        const WHATSAPP_PHONE = "51926016367"; 
+
+        // --- ADMIN ---
+        function checkAdmin() {
+            if (window.location.hash === '#admin') window.location.href = GOOGLE_SHEET_EDIT_URL;
+        }
+        checkAdmin();
+        window.addEventListener('hashchange', checkAdmin);
+
+        // --- MOCK DATA ---
+        const MOCK_DATA = [
+            { id: 601, nombre: "MacBook Air M2", precio: 4500.00, categoria: "Laptops", descripcion: "Chip M2, 8GB RAM, 256GB SSD, Pantalla Liquid Retina 13.6\".", img: "https://loremflickr.com/400/300/macbook,laptop?lock=1" },
+            { id: 602, nombre: "iPhone 15 Pro Max", precio: 5800.00, categoria: "Celulares", descripcion: "Titanio, Chip A17 Pro, Cámara 48MP, USB-C.", img: "https://loremflickr.com/400/300/iphone,15?lock=2" },
+            { id: 603, nombre: "Samsung Galaxy S24 Ultra", precio: 5200.00, categoria: "Celulares", descripcion: "AI integrado, Zoom 100x, S-Pen incluido, Pantalla 120Hz.", img: "https://loremflickr.com/400/300/samsung,s24?lock=3" },
+            { id: 604, nombre: "Laptop Gamer ASUS TUF", precio: 3800.00, categoria: "Laptops", descripcion: "RTX 4050, Intel i7 12va, 16GB RAM, Pantalla 144Hz.", img: "https://loremflickr.com/400/300/laptop,gaming?lock=4" },
+            { id: 605, nombre: "iPad Air 5ta Gen", precio: 2600.00, categoria: "Tablets", descripcion: "Chip M1, Pantalla 10.9\", Compatible con Apple Pencil 2.", img: "https://loremflickr.com/400/300/ipad,tablet?lock=5" },
+            { id: 606, nombre: "Monitor LG UltraWide", precio: 1200.00, categoria: "Monitores", descripcion: "29 pulgadas, IPS, HDR10, ideal para productividad.", img: "https://loremflickr.com/400/300/monitor,screen?lock=6" },
+        ];
+
+        let allProducts = [];
+        let cart = JSON.parse(localStorage.getItem('techZoneCart')) || []; 
+        let activeCategory = 'all';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadData();
+            updateCartUI();
+            document.getElementById('searchInput').addEventListener('keyup', applyFilters);
+        });
+
+        async function loadData() {
+            try {
+                if (GOOGLE_SHEET_CSV_URL) {
+                    const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                    const text = await response.text();
+                    allProducts = parseCSV(text);
+                } else { allProducts = MOCK_DATA; }
+            } catch (error) { allProducts = MOCK_DATA; }
+            
+            renderCategories();
+            applyFilters();
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function parseCSV(text) {
+            const result = [];
+            const lines = text.split('\n');
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const row = [];
+                let currentVal = '';
+                let insideQuotes = false;
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    if (char === '"') {
+                        if (insideQuotes && line[j+1] === '"') { currentVal += '"'; j++; } 
+                        else { insideQuotes = !insideQuotes; }
+                    } else if (char === ',' && !insideQuotes) {
+                        row.push(currentVal.trim()); currentVal = '';
+                    } else { currentVal += char; }
+                }
+                row.push(currentVal.trim());
+                if (row.length >= 3) { 
+                    result.push({
+                        id: i,
+                        nombre: row[0].replace(/^"|"$/g, '') || "Item Tech",
+                        precio: parseFloat(row[1].replace(/[^\d.-]/g, '')) || 0,
+                        categoria: row[2].replace(/^"|"$/g, '') || "General",
+                        descripcion: row[3] ? row[3].replace(/^"|"$/g, '') : "",
+                        imagen: row[4] ? row[4].replace(/^"|"$/g, '') : "https://via.placeholder.com/300"
+                    });
+                }
+            }
+            return result;
+        }
+
+        function renderCategories() {
+            const categories = ['all', ...new Set(allProducts.map(p => p.categoria))];
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                if(!cat) return;
+                const btn = document.createElement('button');
+                btn.className = `filter-btn ${cat === 'all' ? 'active' : ''}`;
+                btn.innerText = cat === 'all' ? 'Todos' : cat;
+                btn.onclick = (e) => filterCategory(cat, e.target);
+                container.appendChild(btn);
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const sort = document.getElementById('sortSelect').value;
+            let filtered = allProducts.filter(p => {
+                return (p.nombre.toLowerCase().includes(search) || p.descripcion.toLowerCase().includes(search)) &&
+                       (activeCategory === 'all' || p.categoria === activeCategory);
+            });
+
+            if (sort === 'price-asc') filtered.sort((a,b) => a.precio - b.precio);
+            if (sort === 'price-desc') filtered.sort((a,b) => b.precio - a.precio);
+            renderGrid(filtered);
+        }
+
+        function renderGrid(products) {
+            const grid = document.getElementById('productsGrid');
+            const noRes = document.getElementById('noResults');
+            grid.innerHTML = '';
+            
+            if (products.length === 0) { noRes.classList.remove('hidden'); return; }
+            noRes.classList.add('hidden');
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="img-container">
+                        <img src="${p.imagen}" alt="${p.nombre}" onerror="this.src='https://via.placeholder.com/300'">
+                        <span class="category-badge">${p.categoria}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="product-title">${p.nombre}</div>
+                        <div class="product-desc">${p.descripcion}</div>
+                        <div class="price-box">
+                            <div class="price-label">Precio Contado</div>
+                            <div class="price">S/ ${p.precio.toFixed(2)}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-outline" onclick="showDetails(${p.id})">Detalles</button>
+                            <button class="btn btn-primary" onclick="addToCart(${p.id})">Agregar</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat, btn) {
+            activeCategory = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilters();
+        }
+
+        function addToCart(id) {
+            const product = allProducts.find(p => p.id === id);
+            const existing = cart.find(i => i.id === id);
+            if (existing) { existing.qty++; } else { cart.push({ ...product, qty: 1 }); }
+            saveCart();
+            toggleCart(true);
+        }
+
+        function removeFromCart(id) { cart = cart.filter(i => i.id !== id); saveCart(); }
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) removeFromCart(id);
+                else saveCart();
+            }
+        }
+        function saveCart() { localStorage.setItem('techZoneCart', JSON.stringify(cart)); updateCartUI(); }
+
+        function updateCartUI() {
+            const count = cart.reduce((acc, item) => acc + item.qty, 0);
+            const total = cart.reduce((acc, item) => acc + (item.precio * item.qty), 0);
+            document.getElementById('cartCount').innerText = count;
+            document.getElementById('cartTotal').innerText = `S/ ${total.toFixed(2)}`;
+            
+            const container = document.getElementById('cartItems');
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94A3B8; margin-top:20px;">Carrito vacío.</p>';
+            } else {
+                container.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <img src="${item.imagen}" alt="${item.nombre}">
+                        <div style="flex-grow:1;">
+                            <div style="font-weight:700; font-size:0.9rem; color:var(--secondary);">${item.nombre}</div>
+                            <div style="color:#64748B; font-size:0.85rem;">S/ ${item.precio.toFixed(2)} x ${item.qty}</div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+                                <span>${item.qty}</span>
+                                <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                        <div onclick="removeFromCart(${item.id})" style="cursor:pointer; color:#EF4444;">&times;</div>
+                    </div>
+                `).join('');
+            }
+        }
+        function toggleCart(forceOpen = false) {
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (forceOpen) { sidebar.classList.add('open'); overlay.classList.add('open'); } 
+            else { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); }
+        }
+        function checkoutWhatsApp() {
+            if (cart.length === 0) return alert("Agrega productos primero.");
+            let msg = "Hola! Me interesa comprar estos equipos:%0A%0A";
+            let total = 0;
+            cart.forEach(item => {
+                const subtotal = item.precio * item.qty;
+                msg += `💻 *${item.nombre}*%0A   Cant: ${item.qty} - S/ ${subtotal.toFixed(2)}%0A`;
+                total += subtotal;
+            });
+            msg += `%0A*TOTAL A PAGAR: S/ ${total.toFixed(2)}*`;
+            window.open(`https://wa.me/${WHATSAPP_PHONE}?text=${msg}`, '_blank');
+        }
+        function showDetails(id) {
+            const p = allProducts.find(i => i.id === id);
+            const modal = document.getElementById('productModal');
+            document.getElementById('modalBody').innerHTML = `
+                <div style="text-align:center; margin-bottom:20px; background:#F1F5F9; padding:20px; border-radius:8px;">
+                    <img src="${p.imagen}" style="max-width:100%; max-height:250px; object-fit:contain;" onerror="this.src='https://via.placeholder.com/300'">
+                </div>
+                <div style="color:var(--primary); font-weight:700; text-transform:uppercase; font-size:0.8rem; margin-bottom:5px;">${p.categoria}</div>
+                <h2 style="color:var(--secondary); font-size:1.5rem; margin-bottom:15px;">${p.nombre}</h2>
+                <p style="margin-bottom:25px; line-height:1.6; color:#475569;">${p.descripcion}</p>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-top:1px solid #eee; padding-top:15px;">
+                    <div>
+                        <div style="font-size:0.8rem; color:#64748B;">Precio Online</div>
+                        <div style="font-size:1.8rem; font-weight:800; color:var(--primary);">S/ ${p.precio.toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" style="width:100%; padding:15px; font-size:1.1rem; border:none; border-radius:6px; cursor:pointer;" onclick="addToCart(${p.id}); closeModal()">Agregar al Carrito</button>
+            `;
+            modal.classList.add('active');
+        }
+        function closeModal() { document.getElementById('productModal').classList.remove('active'); }
+        document.getElementById('productModal').addEventListener('click', (e) => { if (e.target.id === 'productModal') closeModal(); });
+    </script>
+</body>
+</html>
