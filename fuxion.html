@@ -524,13 +524,37 @@
         </div>
     </div>
     <script>
-        // --- CONFIGURACIÓN ---
-        const WHATSAPP_PHONE = "51992891423"; // CAMBIA ESTO POR TU NÚMERO
-        
-        // Pega aquí tu enlace CSV de la hoja "Productos"
-        // Asegúrate que al publicar en Google Sheets seleccionaste "Hoja: Productos"
-        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMhaXZEj0ZLxbLV5YlqRWTipFNB7dP_JoWyDBvRklDE619sJyse8ln00TMiN0ueFXhtLOZED2avD1V/pub?gid=0&single=true&output=csv"; 
 
+        // --- 1. CONFIGURACIÓN DEL NEGOCIO (ESTÁNDAR) ---
+        
+        // A) Enlace "Público" (CSV) -> Para que la página lea los datos
+        // Archivo > Compartir > Publicar en la web > CSV
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMhaXZEj0ZLxbLV5YlqRWTipFNB7dP_JoWyDBvRklDE619sJyse8ln00TMiN0ueFXhtLOZED2avD1V/pub?output=csv"; 
+
+        // B) Enlace "Privado" (Editor) -> Para que el dueño edite precios
+        // El enlace normal que ves arriba en tu navegador cuando editas
+        const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1Mcjtr1wfO-vZscMgTnV82x1snEqB4RWstZH29DsB8OQ/edit";
+
+        // C) Teléfono para pedidos
+        const WHATSAPP_PHONE = "51999999999"; 
+
+
+        // --- 2. LÓGICA "MODO ADMIN" (REDIRECCIÓN) ---
+        // Esto verifica si la URL termina en #admin
+        if (window.location.hash === '#admin') {
+            // Opcional: Pedir contraseña sencilla para que no entre cualquiera
+            // Si quieres acceso directo, borra el if(prompt...) y deja solo el window.location
+            const pass = prompt("🔒 Área de Cliente:\nIngresa la clave para editar tu catálogo:");
+            if (pass === "fuxion2024") { // Contraseña simple
+                window.location.href = GOOGLE_SHEET_EDIT_URL;
+            } else {
+                alert("Contraseña incorrecta.");
+                history.pushState("", document.title, window.location.pathname); // Quita el #admin de la URL
+            }
+            // NOTA: Si prefieres que sea directo sin clave, borra todo lo de arriba y pon solo:
+            // window.location.href = GOOGLE_SHEET_EDIT_URL;
+        }
+        
         // --- DATOS DE RESPALDO (Por si falla la hoja) ---
         const MOCK_DATA = [
             { id: 1, nombre: "Vita Energía", precio: 45.00, categoria: "Energía", descripcion: "Bebida multivitamínica con antioxidantes.", img: "https://loremflickr.com/400/300/acai,drink?lock=1" },
