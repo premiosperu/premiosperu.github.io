@@ -31,6 +31,27 @@ async function iniciarSistema() {
         statusText.classList.remove('animate-pulse');
         console.log("Sistema cargado.");
 
+        // =========================================================
+// === CÓDIGO PARA DETECTAR LA TECLA ENTER (INICIO) ===
+// =========================================================
+
+const userInputElement = document.getElementById('userInput');
+
+// Agregamos un 'escuchador' para el evento de presionar tecla
+userInputElement.addEventListener('keydown', function(event) {
+    // Verificamos si la tecla presionada es 'Enter'
+    if (event.key === 'Enter') {
+        // Prevenimos un salto de línea si el input fuera un textarea
+        event.preventDefault(); 
+        // Llamamos a la función principal de envío
+        enviarMensaje();
+    }
+});
+
+// =======================================================
+// === CÓDIGO PARA DETECTAR LA TECLA ENTER (FIN) ===
+// =======================================================
+
     } catch (error) {
         console.error(error);
         statusText.innerText = "Error Config";
