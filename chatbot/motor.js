@@ -7,7 +7,8 @@ const sendBtn = document.getElementById('sendBtn');
 const sugerenciasContainer = document.getElementById('sugerencias-container');
 
 let fuseEngine; // Motor de búsqueda Fuse.js
-let personalidadData = { saludos: [], cierres: [], sin_entender: [] }; // Almacenará las frases
+// INICIALIZACIÓN ROBUSTA: Garantizamos que estos arrays siempre existan.
+let personalidadData = { saludo: [], cierre: [], sin_entender: [] }; 
 
 // === INICIO DEL SISTEMA ===
 async function iniciarSistema() {
@@ -25,7 +26,7 @@ async function iniciarSistema() {
         const textoBase = await resDatos.text();
         
         // 3. Parsear el texto plano y separar en Reglas y Personalidad
-        const conocimiento = parseTotalData(textoBase);
+        const conocimiento = parseTotalData(textoBase); // La función ahora llena personalidadData
 
         // 4. Construir el motor Fuse.js con las reglas
         buildFuseEngine(conocimiento);
@@ -39,7 +40,7 @@ async function iniciarSistema() {
     } catch (error) {
         console.error("Error FATAL al iniciar el sistema:", error);
         document.getElementById('status-text').innerText = "ERROR DE CONEXIÓN";
-        agregarBurbuja("⚠️ Error crítico: No pude cargar la base de conocimiento. Revise la URL pública de su Google Sheet.", 'bot');
+        agregarBurbuja("⚠️ Error crítico: No pude cargar la base de conocimiento. Revise la URL pública y el formato de las cabeceras.", 'bot');
         return;
     }
 
@@ -74,12 +75,11 @@ function parseTotalData(rawData) {
     const respuestaTextoIndex = headers.indexOf('respuesta_texto');
 
     if (idReglaIndex === -1 || palabrasClaveIndex === -1 || respuestaTextoIndex === -1) {
-        console.error("Error de formato: Faltan cabeceras obligatorias (ID_REGLA, PALABRAS_CLAVE, RESPUESTA_TEXTO).");
+        console.error("Error de formato: Faltan cabeceras obligatorias (id_regla, palabras_clave, respuesta_texto).");
         return [];
     }
 
     for (let i = 1; i < lineas.length; i++) {
-        // Uso un regex para manejar separadores dentro de comillas (útil para CSV)
         const valores = lineas[i].match(/(".*?"|[^"|,\t\n\r]+)(?=\s*[,|\t|\n\r]|\s*$)/g) || lineas[i].split(separador);
         
         if (valores.length < headers.length) continue; 
@@ -93,9 +93,10 @@ function parseTotalData(rawData) {
         // 1. CLASIFICAR COMO PERSONALIDAD
         if (personalidadTipos.includes(id)) {
             if (respuesta) {
-                personalidadData[id].push(respuesta);
+                // FIX: El array ya existe gracias a la inicialización global en el top
+                personalidadData[id].push(respuesta); 
             }
-            continue; // Saltar al siguiente ciclo, ya fue clasificado
+            continue; 
         }
         
         // 2. CLASIFICAR COMO REGLA Q&A (para Fuse.js)
@@ -110,7 +111,7 @@ function parseTotalData(rawData) {
         }
     }
     
-    console.log(`Cargado: ${rulesData.length} Reglas Q&A y ${personalidadData.saludos.length + personalidadData.cierres.length + personalidadData.sin_entender.length} Frases de Personalidad.`);
+    console.log(`Cargado: ${rulesData.length} Reglas Q&A y ${personalidadData.saludo.length + personalidadData.cierre.length + personalidadData.sin_entender.length} Frases de Personalidad.`);
 
     return rulesData;
 }
@@ -145,7 +146,6 @@ async function procesarMensaje() {
 
     document.getElementById(loadingId)?.remove();
     
-    // El texto final se renderiza con Marked (soporte para Markdown)
     const contenidoHTML = (typeof marked !== 'undefined') 
         ? marked.parse(respuestaFinal) 
         : respuestaFinal.replace(/\n/g, '<br>');
@@ -175,11 +175,14 @@ function generarRespuesta(texto) {
     // B) CONSTRUCCIÓN DE LA RESPUESTA (Personalidad)
     if (respuestaBase) {
         // Usamos la data de personalidadData (cargada dinámicamente)
-        const saludo = obtenerAleatorio(personalidadData.saludos);
-        const cierre = Math.random() > 0.3 ? obtenerAleatorio(personalidadData.cierres) : "";
+        const saludo = obtenerAleatorio(personalidadData.saludo);
+        const cierre = obtenerAleatorio(personalidadData.cierre);
         
+        // Usamos Math.random() para decidir si incluimos el cierre
+        const cierreFinal = Math.random() > 0.3 ? `\n\n${cierre}` : '';
+
         // El bot siempre da un saludo antes de la respuesta de la regla
-        return `${saludo} ${respuestaBase} \n\n${cierre}`;
+        return `${saludo} ${respuestaBase} ${cierreFinal}`;
     }
 
     // C) FALLBACK (No entendió) -> Botón de WhatsApp
@@ -254,7 +257,6 @@ function mostrarLoading() {
     `;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
-    return id;
 }
 
 window.onload = iniciarSistema;
