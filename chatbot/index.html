@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frankos Chicken - Pedidos con IA</title>
     
-    <!-- Librerías (URLs corregidas) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* CONFIGURACIÓN BASE DEL CHAT */
-        :root { --chat-color: #ea580c; }
+        /* CONFIGURACIÓN BASE DEL CHAT - USARÁ VARIABLE CSS */
+        :root { --chat-color: #ea580c; } 
         
         /* Font cambiado a Segoe UI según tu original */
         body { background-color: #f3f4f6; font-family: 'Segoe UI', sans-serif; }
@@ -55,10 +54,8 @@
         .bot-bubble a { color: var(--chat-color); font-weight: 600; text-decoration: underline; }
     </style>
 </head>
-<!-- BODY restaurado a tu diseño original -->
 <body class="flex flex-col h-screen max-w-2xl mx-auto bg-gray-50 shadow-xl">
 
-    <!-- HEADER (Clase sticky eliminada) -->
     <header class="text-white p-4 flex items-center gap-3 shadow-md transition-colors" 
             style="background-color: var(--chat-color);">
         <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">FC</div>
@@ -68,17 +65,13 @@
         </div>
     </header>
 
-    <!-- ÁREA DE CHAT -->
     <div id="chat-container" class="chat-box overflow-y-auto p-4 space-y-4 flex flex-col scroll-smooth">
-        <!-- Burbuja de Bienvenida -->
         <div class="p-3 max-w-[85%] shadow-sm text-sm bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-tl-none self-start bot-bubble">
             <p id="bot-welcome-text">...</p>
         </div>
         
-        <!-- CONTENEDOR PARA BOTONES DE SUGERENCIA (Eliminado) -->
-    </div>
+        </div>
 
-    <!-- ÁREA DE INPUT (Clase sticky eliminada) -->
     <div class="p-4 bg-white border-t border-gray-200">
         <div class="flex gap-2 relative">
             <input type="text" id="userInput" placeholder="Escribe aquí..." maxlength="150" 
@@ -90,18 +83,9 @@
                 ➤
             </button>
         </div>
-        <!-- Texto inferior ajustado -->
         <p class="text-center text-[10px] text-gray-400 mt-2">Asistente impulsado por DeepSeek</p>
     </div>
 
-    <!-- Carga de Configuración y Lógica -->
-    <script src="config.js"></script>
-    <script>
-        // Aplicar estilos de la configuración inmediatamente después de cargar config.js
-        if (window.CHAT_CONFIG && window.CHAT_CONFIG.colorPrincipal) {
-            document.documentElement.style.setProperty('--chat-color', window.CHAT_CONFIG.colorPrincipal);
-        }
-    </script>
     <script src="motor.js"></script>
 </body>
 </html>
