@@ -1,14 +1,7 @@
 window.CHAT_CONFIG = {
     // === DISEÑO VISUAL ===
-    titulo: "Asistente Fedeliza",
-    colorPrincipal: "#D73517",
-    saludoInicial: "¡Hola! Soy Fedeliza. ¿En qué puedo ayudarte? 🍗",
-    placeholder: "Pregunta precios o horarios...",
-
-  window.CHAT_CONFIG = {
-    // === DISEÑO VISUAL ===
     titulo: "Frankos Chicken & Grill 🍗",
-    colorPrincipal: "#D73517", // Un naranja parrilla (puedes cambiarlo a tu rojo de marca)
+    colorPrincipal: "#ea580c", // Un naranja parrilla (puedes cambiarlo a tu rojo de marca)
     
     // AQUÍ VA EL SALUDO (Se muestra solo una vez al inicio)
     saludoInicial: "¡Hola! Bienvenido a Frankos Chicken. Soy Fedeliza. ¿Qué se te antoja hoy? 🍗",
@@ -25,13 +18,13 @@ window.CHAT_CONFIG = {
             nombre: "Gemini Flash Lite (Latest)",
             tipo: "google",
             // 👇 TU CLAVE AQUÍ
-            apiKey: "AIzaSyAT_deiQjOuaiEedotekG2KV5aGsBrFZx4", 
+            apiKey: "TU_NUEVA_CLAVE_GOOGLE_AQUI", 
             modelo: "gemini-flash-lite-latest"
         },
         {
             nombre: "Gemini 2.0 Flash Lite",
             tipo: "google",
-            apiKey: "AIzaSyAT_deiQjOuaiEedotekG2KV5aGsBrFZx4", 
+            apiKey: "TU_NUEVA_CLAVE_GOOGLE_AQUI", 
             modelo: "gemini-2.0-flash-lite-preview-02-05"
         },
         {
