@@ -1,7 +1,7 @@
 window.CHAT_CONFIG = {
     // === DISEÑO VISUAL ===
     titulo: "Asistente Fedeliza",
-    colorPrincipal: "#2563eb",
+    colorPrincipal: "#D73517",
     saludoInicial: "¡Hola! Soy Fedeliza. ¿En qué puedo ayudarte? 🍗",
     placeholder: "Pregunta precios o horarios...",
 
