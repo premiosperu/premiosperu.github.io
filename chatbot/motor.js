@@ -1,5 +1,5 @@
-// MOTOR.JS - Sistema Híbrido con Coincidencia Difusa (Fuse.js)
-// Lógica pura de Q&A cargando las reglas desde una URL externa (Google Sheets).
+// MOTOR.JS - Sistema Modular de Carga Única (Reglas + Personalidad)
+// Carga todo el conocimiento desde UNA SOLA URL externa y lo clasifica.
 
 // === VARIABLES GLOBALES ===
 const userInput = document.getElementById('userInput');
@@ -7,44 +7,44 @@ const sendBtn = document.getElementById('sendBtn');
 const sugerenciasContainer = document.getElementById('sugerencias-container');
 
 let fuseEngine; // Motor de búsqueda Fuse.js
+let personalidadData = { saludos: [], cierres: [], sin_entender: [] }; // Almacenará las frases
 
 // === INICIO DEL SISTEMA ===
 async function iniciarSistema() {
     const config = window.CHAT_CONFIG || {};
     
-    // 1. Aplicar Textos
+    // 1. Aplicar Textos Estáticos
     document.getElementById('header-title').innerText = config.titulo || "Asistente";
-    document.getElementById('bot-welcome-text').innerText = config.saludoInicial || "Hola";
     userInput.placeholder = config.placeholder || "Escribe aquí...";
+    document.getElementById('status-text').innerText = "Cargando datos...";
     
     try {
-        // 2. Cargar Base de Datos desde la URL externa
+        // 2. Cargar Base de Datos Única
         const resDatos = await fetch(config.data_source_url);
-        if (!resDatos.ok) throw new Error("Error al cargar la URL del Sheet. Código: " + resDatos.status);
+        if (!resDatos.ok) throw new Error("Error al cargar la URL del Sheet (Código: " + resDatos.status + ").");
         const textoBase = await resDatos.text();
         
-        // 3. Parsear el texto plano (CSV/TSV) a JSON
-        const conocimiento = parseData(textoBase);
+        // 3. Parsear el texto plano y separar en Reglas y Personalidad
+        const conocimiento = parseTotalData(textoBase);
 
-        // 4. Construir el motor Fuse.js
+        // 4. Construir el motor Fuse.js con las reglas
         buildFuseEngine(conocimiento);
 
         // 5. Habilitar Chat
         toggleInput(true);
         document.getElementById('status-text').innerText = "Conectado. Sin costo ⚡";
-
-        // 6. Mostrar botones de sugerencia iniciales
+        document.getElementById('bot-welcome-text').innerText = config.saludoInicial;
         mostrarBotonesSugeridos(config.sugerencias_rapidas);
         
     } catch (error) {
-        console.error("Error al iniciar el sistema:", error);
-        document.getElementById('status-text').innerText = "ERROR al cargar la Base de Datos";
-        agregarBurbuja("⚠️ Error: No pude cargar la base de conocimiento desde la URL. Revise la URL o el formato de su Sheet.", 'bot');
+        console.error("Error FATAL al iniciar el sistema:", error);
+        document.getElementById('status-text').innerText = "ERROR DE CONEXIÓN";
+        agregarBurbuja("⚠️ Error crítico: No pude cargar la base de conocimiento. Revise la URL pública de su Google Sheet.", 'bot');
         return;
     }
 
 
-    // 7. Eventos
+    // 6. Eventos
     sendBtn.addEventListener('click', procesarMensaje);
     userInput.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
@@ -52,64 +52,76 @@ async function iniciarSistema() {
             procesarMensaje();
         }
     });
-    
-    console.log("Sistema Q&A modular (Fuse.js) cargado.");
 }
 
-// === PARSER: Convierte CSV/TSV (Texto Plano) a Array de objetos ===
-function parseData(rawData) {
+
+// === PARSER ÚNICO: Analiza la tabla y separa Reglas de Personalidad ===
+function parseTotalData(rawData) {
     const lineas = rawData.trim().split('\n');
     if (lineas.length < 2) return [];
 
-    // Detectar separador (pipe, tab o coma)
     const encabezado = lineas[0];
     let separador = ',';
     if (encabezado.includes('|')) separador = '|';
     else if (encabezado.includes('\t')) separador = '\t';
     
     const headers = encabezado.split(separador).map(h => h.trim().toLowerCase());
-    const data = [];
+    const rulesData = [];
+    const personalidadTipos = ['saludo', 'cierre', 'sin_entender'];
 
-    // Validar headers mínimos
-    if (!headers.includes('id_regla') || !headers.includes('palabras_clave') || !headers.includes('respuesta_texto')) {
-        console.error("Error: Headers inválidos. Esperados: ID_REGLA, PALABRAS_CLAVE, RESPUESTA_TEXTO.");
+    const idReglaIndex = headers.indexOf('id_regla');
+    const palabrasClaveIndex = headers.indexOf('palabras_clave');
+    const respuestaTextoIndex = headers.indexOf('respuesta_texto');
+
+    if (idReglaIndex === -1 || palabrasClaveIndex === -1 || respuestaTextoIndex === -1) {
+        console.error("Error de formato: Faltan cabeceras obligatorias (ID_REGLA, PALABRAS_CLAVE, RESPUESTA_TEXTO).");
         return [];
     }
 
     for (let i = 1; i < lineas.length; i++) {
-        // Usamos un regex para manejar comas o pipes que estén dentro de comillas (típico de CSV)
+        // Uso un regex para manejar separadores dentro de comillas (útil para CSV)
         const valores = lineas[i].match(/(".*?"|[^"|,\t\n\r]+)(?=\s*[,|\t|\n\r]|\s*$)/g) || lineas[i].split(separador);
         
-        if (valores.length !== headers.length) {
-            console.warn(`Saltando línea ${i+1} por datos incompletos.`);
-            continue;
-        }
+        if (valores.length < headers.length) continue; 
 
-        const obj = {};
-        headers.forEach((header, index) => {
-            let valor = valores[index] ? valores[index].trim().replace(/^"|"$/g, '') : '';
-            
-            // Reemplazar \\n por \n (para Markdown)
-            if (header === 'respuesta_texto') {
-                valor = valor.replace(/\\n/g, '\n'); 
-            }
-            
-            obj[header] = valor;
-        });
+        const id = valores[idReglaIndex] ? valores[idReglaIndex].trim().toLowerCase() : '';
+        let respuesta = valores[respuestaTextoIndex] ? valores[respuestaTextoIndex].trim().replace(/^"|"$/g, '') : '';
         
-        obj.palabras_clave = obj.palabras_clave || '';
-        data.push(obj);
+        // Reemplazar \\n por \n (para Markdown)
+        respuesta = respuesta.replace(/\\n/g, '\n'); 
+
+        // 1. CLASIFICAR COMO PERSONALIDAD
+        if (personalidadTipos.includes(id)) {
+            if (respuesta) {
+                personalidadData[id].push(respuesta);
+            }
+            continue; // Saltar al siguiente ciclo, ya fue clasificado
+        }
+        
+        // 2. CLASIFICAR COMO REGLA Q&A (para Fuse.js)
+        const palabrasClave = valores[palabrasClaveIndex] ? valores[palabrasClaveIndex].trim() : '';
+        
+        if (id && palabrasClave && respuesta) {
+            rulesData.push({
+                id_regla: id,
+                palabras_clave: palabrasClave,
+                respuesta_texto: respuesta
+            });
+        }
     }
-    return data;
+    
+    console.log(`Cargado: ${rulesData.length} Reglas Q&A y ${personalidadData.saludos.length + personalidadData.cierres.length + personalidadData.sin_entender.length} Frases de Personalidad.`);
+
+    return rulesData;
 }
 
 
 // === LÓGICA DE INDEXACIÓN (Construcción del Motor de Similitud) ===
 function buildFuseEngine(data) {
     const options = {
-        keys: ['palabras_clave'], // Solo buscamos en el array de palabras clave
-        includeScore: true,       // Queremos saber qué tan buena fue la coincidencia
-        threshold: 0.4,           // Tolerancia: 0.4 (acepta errores de tipeo y sinónimos)
+        keys: ['palabras_clave'],
+        includeScore: true,
+        threshold: 0.4, 
         ignoreLocation: true      
     };
     
@@ -133,6 +145,7 @@ async function procesarMensaje() {
 
     document.getElementById(loadingId)?.remove();
     
+    // El texto final se renderiza con Marked (soporte para Markdown)
     const contenidoHTML = (typeof marked !== 'undefined') 
         ? marked.parse(respuestaFinal) 
         : respuestaFinal.replace(/\n/g, '<br>');
@@ -161,20 +174,22 @@ function generarRespuesta(texto) {
     
     // B) CONSTRUCCIÓN DE LA RESPUESTA (Personalidad)
     if (respuestaBase) {
-        const saludo = obtenerAleatorio(config.personalidad.saludos);
-        const cierre = Math.random() > 0.3 ? obtenerAleatorio(config.personalidad.cierres) : "";
+        // Usamos la data de personalidadData (cargada dinámicamente)
+        const saludo = obtenerAleatorio(personalidadData.saludos);
+        const cierre = Math.random() > 0.3 ? obtenerAleatorio(personalidadData.cierres) : "";
         
+        // El bot siempre da un saludo antes de la respuesta de la regla
         return `${saludo} ${respuestaBase} \n\n${cierre}`;
     }
 
     // C) FALLBACK (No entendió) -> Botón de WhatsApp
-    const fraseFail = obtenerAleatorio(config.personalidad.sin_entender);
+    const fraseFail = obtenerAleatorio(personalidadData.sin_entender);
     const linkWsp = `https://wa.me/${config.whatsapp}?text=${encodeURIComponent("Hola, tengo una consulta sobre: " + texto)}`;
     
     return `${fraseFail}\n<a href="${linkWsp}" class="chat-btn">Chatear por WhatsApp 🟢</a>`;
 }
 
-// === LÓGICA DE BOTONES (Solo para la bienvenida) ===
+// === LÓGICA DE BOTONES (Simulan entrada de usuario) ===
 function mostrarBotonesSugeridos(sugerencias) {
     sugerenciasContainer.innerHTML = '';
     const wrapper = document.createElement('div');
@@ -185,7 +200,6 @@ function mostrarBotonesSugeridos(sugerencias) {
         button.textContent = sug.texto;
         button.className = "px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition shadow-sm active:scale-95";
         
-        // Simula la entrada del usuario al hacer clic
         button.onclick = function() {
             userInput.value = sug.accion; 
             procesarMensaje();          
@@ -198,6 +212,7 @@ function mostrarBotonesSugeridos(sugerencias) {
 
 // === UTILIDADES ===
 function obtenerAleatorio(array) {
+    if (!array || array.length === 0) return "";
     return array[Math.floor(Math.random() * array.length)];
 }
 
@@ -239,6 +254,7 @@ function mostrarLoading() {
     `;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+    return id;
 }
 
 window.onload = iniciarSistema;
