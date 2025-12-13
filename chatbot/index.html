@@ -21,7 +21,9 @@
         }
     </style>
 </head>
-<body class="flex flex-col h-screen max-w-2xl mx-auto bg-gray-50 shadow-xl">
+<!-- FIX: style="opacity: 0" hace que la página empiece invisible para que no veas el color azul -->
+<body class="flex flex-col h-screen max-w-2xl mx-auto bg-gray-50 shadow-xl" 
+      style="opacity: 0; transition: opacity 0.2s ease-in;">
 
     <header class="text-white p-4 flex items-center gap-3 shadow-md transition-colors" 
             style="background-color: var(--chat-color);">
@@ -67,12 +69,21 @@
 
         loadScript('config.js')
             .then(() => {
+                // 1. Aplicar el color ROJO (o el que tengas en config) MIENTRAS sigue invisible
                 if (window.CHAT_CONFIG && window.CHAT_CONFIG.colorPrincipal) {
                     document.documentElement.style.setProperty('--chat-color', window.CHAT_CONFIG.colorPrincipal);
                 }
+                
+                // 2. AHORA SÍ: Mostrar la página (Fade-in suave)
+                document.body.style.opacity = '1';
+                
                 return loadScript('motor.js');
             })
-            .catch(err => console.error("Error cargando scripts:", err));
+            .catch(err => {
+                console.error("Error cargando scripts:", err);
+                // Si falla, mostramos la página de todos modos para ver el error
+                document.body.style.opacity = '1';
+            });
     </script>
 
 </body>
