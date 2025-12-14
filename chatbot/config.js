@@ -22,7 +22,7 @@ export const TECH_CONFIG = {
 
     // Configuración de UI
     color_principal: "#ea580c",          // Color de acento principal.
-    whatsapp: "51999999999",            // SOLO NÚMEROS de WhatsApp para soporte.
+    whatsapp: "51949973277",            // SOLO NÚMEROS de WhatsApp para soporte.
     placeholder: "Escribe tu consulta...", // Texto del input
     
     // Seguridad (Frontend)
