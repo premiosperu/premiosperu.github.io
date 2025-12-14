@@ -1,6 +1,7 @@
-// MOTOR.JS - Lógica de Negocio, Seguridad y Conexión
+// funciones.js - Lógica de Negocio, Seguridad y Conexión
 
-import { TECH_CONFIG, CONFIG_BOT } from './config.js'; 
+// RUTA ACTUALIZADA: config.js -> ajustes.js
+import { TECH_CONFIG, CONFIG_BOT } from './ajustes.js'; 
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; 
 
 // === VARIABLES GLOBALES ===
@@ -43,7 +44,7 @@ function checkRateLimit() {
     return { limitReached: false };
 }
 
-// === CARGA DE CONTEXTO (MOVIMIENTO: AHORA ESTÁ MÁS ARRIBA PARA EVITAR ReferenceError) ===
+// === CARGA DE CONTEXTO ===
 async function cargarYAnalizarContexto() {
     try {
         document.getElementById('status-text').innerText = "Cargando sistema...";
@@ -85,7 +86,13 @@ function setupAccessGate() {
     
     const checkKey = () => {
         const input = keyInput.value.trim().toLowerCase();
-        if (input === TECH_CONFIG.CLAVE_ACCESO.toLowerCase()) {
+        const realKey = TECH_CONFIG.CLAVE_ACCESO.toLowerCase();
+        
+        // --- LÓGICA DE TRUCO DE DESARROLLO ---
+        const isDevBypass = (realKey === 'devmode' && input === '');
+        const isCorrectKey = (input === realKey);
+        
+        if (isCorrectKey || isDevBypass) {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
             chatInterface.classList.remove('hidden');
@@ -109,7 +116,7 @@ function setupAccessGate() {
 
 // === INICIO DEL CHAT (Se llama solo si la clave es correcta) ===
 async function cargarIA() {
-    systemInstruction = await cargarYAnalizarContexto(); // ESTA LLAMADA AHORA FUNCIONA
+    systemInstruction = await cargarYAnalizarContexto(); 
     
     // UI Setup (Usando los valores de CONFIG_BOT)
     document.documentElement.style.setProperty('--chat-color', TECH_CONFIG.color_principal);
