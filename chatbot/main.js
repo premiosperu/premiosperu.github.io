@@ -124,9 +124,8 @@ function setupAccessGate() {
 
             const row = data.table.rows[0].c;
             
-            // CORRECCIÓN: Asegurar que el valor es una cadena antes de llamar a toLowerCase()
-            sheetAccessKey = String(row[0].v).toLowerCase(); 
-            sheetExpirationDate = row[1].v; 
+            sheetAccessKey = row[0] && row[0].v !== null ? String(row[0].v).toLowerCase() : ""; 
+            sheetExpirationDate = row[1] && row[1].v !== null ? row[1].v : ""; 
             
             keyError.classList.add('hidden');
             keyError.innerText = "";
@@ -142,8 +141,32 @@ function setupAccessGate() {
 
     const isKeyExpired = () => {
         if (!sheetExpirationDate) return false;
-        const expirationDate = new Date(sheetExpirationDate); 
+        
+        let dateString = sheetExpirationDate;
+        
+        // Lógica de corrección para formato DD-MM-YYYY HH:mm:ss (Formato peruano local)
+        const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}:\d{2}:\d{2})$/);
+        
+        if (match) {
+            // REORGANIZA a YYYY-MM-DDTHH:mm:ss PERO SIN OFFSET NI Z
+            // Esto le dice a JavaScript que la hora de expiración es la HORA LOCAL DEL DISPOSITIVO
+            const [full, day, month, year, time] = match;
+            dateString = `${year}-${month}-${day}T${time}`; 
+        } else if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+            // Maneja el formato YYYY-MM-DD HH:mm:ss
+            dateString = dateString.replace(' ', 'T'); 
+        }
+        // Si no coincide con ninguno, JS intentará parsearlo (como si fuera formato ISO o local)
+
+
+        const expirationDate = new Date(dateString); 
         const now = new Date(); 
+        
+        if (isNaN(expirationDate)) {
+             console.error("Fecha de expiración inválida en Sheet:", sheetExpirationDate);
+             return false;
+        }
+        
         return now.getTime() > expirationDate.getTime();
     };
 
@@ -152,18 +175,28 @@ function setupAccessGate() {
         if (!loaded) return; 
 
         const realKey = sheetAccessKey; 
+        const input = keyInput.value.trim().toLowerCase();
         
-        const isBypassEnabled = realKey === "" || isKeyExpired();
+        const hasExpired = isKeyExpired();
 
-        if (isKeyExpired() && realKey !== "") {
+        // 1. Clave expirada (y hay clave definida)
+        if (realKey !== "" && hasExpired) {
             keyError.classList.remove('hidden');
             keyError.innerText = "La clave de acceso ha caducado. Contacta al administrador.";
+            return; 
         }
         
-        const input = keyInput.value.trim().toLowerCase();
-        const isCorrectKey = input === realKey;
-        
-        if (isCorrectKey || isBypassEnabled) {
+        // 2. Clave vacía en el Sheet (Permite acceso inmediato sin necesidad de ingresar nada)
+        if (realKey === "") {
+            keyError.classList.add('hidden');
+            accessGate.classList.add('hidden');
+            chatInterface.classList.remove('hidden');
+            cargarIA();
+            return;
+        }
+
+        // 3. Validación ESTRICTA (Si hay clave y no ha expirado)
+        if (input === realKey) {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
             chatInterface.classList.remove('hidden');
