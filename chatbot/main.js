@@ -29,7 +29,7 @@ function aplicarConfiguracionGlobal() {
         linkIcon.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${CONFIG.FAVICON_EMOJI}</text></svg>`;
     }
 
-    document.documentElement.style.setProperty('--chat-color', CONFIG.COLOR_PRIMARIO); // CORREGIDO
+    document.documentElement.style.setProperty('--chat-color', CONFIG.COLOR_PRIMARIO);
     
     const headerIconInitials = document.getElementById('header-icon-initials');
     
@@ -101,7 +101,7 @@ function getExportUrl(sheetId) {
 
 
 function setupAccessGate() {
-    keySubmit.style.backgroundColor = CONFIG.COLOR_PRIMARIO; // CORREGIDO
+    keySubmit.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
     
     let sheetAccessKey = "";
     let sheetExpirationDate = "";
@@ -122,21 +122,20 @@ function setupAccessGate() {
             const jsonText = text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1');
             const data = JSON.parse(jsonText);
 
-            // CORRECCIÓN CRÍTICA: Protege la lectura de la Fila 2 (índice 1) si la tabla tiene al menos dos filas.
+            // CORRECCIÓN: Protege la lectura de la Fila 2 (índice 1).
             const dataRows = data.table.rows;
-            // Si hay dos filas o más, usamos la Fila 2 (datos). Si no, usamos la Fila 1 (encabezado o vacía) como fallback, y si no hay nada, un array vacío.
-            const row = dataRows.length > 1 ? dataRows[1].c : (dataRows[0] ? dataRows[0].c : []); 
+            const row = dataRows.length > 1 ? dataRows[1].c : (dataRows[0] ? dataRows[0].c : []);
             
-            // 1. CLAVE DE ACCESO: Manejo robusto de la clave vacía (null -> "").
+            // 1. CLAVE DE ACCESO
             const rawAccessValue = row[0] && row[0].v !== null ? row[0].v : "";
             sheetAccessKey = String(rawAccessValue).trim().toLowerCase(); 
             
-            // 2. EXTRACCIÓN DE FECHA: Prioriza el formato formateado ('f') para obtener la cadena DD-MM-YYYY HH:mm:ss.
+            // 2. EXTRACCIÓN DE FECHA
             let rawExpiration = row[1];
             if (rawExpiration && rawExpiration.f) {
-                sheetExpirationDate = rawExpiration.f; // Usa el texto formateado
+                sheetExpirationDate = rawExpiration.f; 
             } else if (rawExpiration && rawExpiration.v !== null) {
-                sheetExpirationDate = String(rawExpiration.v); // Usa el valor numérico/string como fallback
+                sheetExpirationDate = String(rawExpiration.v);
             } else {
                 sheetExpirationDate = "";
             }
@@ -159,7 +158,7 @@ function setupAccessGate() {
         let dateString = sheetExpirationDate;
         let expirationDate;
         
-        // Lógica de corrección para formato DD-MM-YYYY HH:mm:ss (Formato local)
+        // Lógica de corrección para formato DD-MM-YYYY HH:mm:ss
         const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}:\d{2}:\d{2})$/);
         
         if (match) {
@@ -198,14 +197,14 @@ function setupAccessGate() {
         
         const hasExpired = isKeyExpired();
 
-        // 1. Clave expirada (y hay clave definida)
+        // 1. Clave expirada
         if (realKey !== "" && hasExpired) {
             keyError.classList.remove('hidden');
             keyError.innerText = "La clave de acceso ha caducado. Contacta al administrador.";
             return; 
         }
         
-        // 2. Clave vacía en el Sheet (Permite acceso automático)
+        // 2. Clave vacía en el Sheet
         if (realKey === "") {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
@@ -214,7 +213,7 @@ function setupAccessGate() {
             return;
         }
 
-        // 3. Validación ESTRICTA (Si hay clave y no ha expirado)
+        // 3. Validación ESTRICTA
         if (input === realKey) {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
@@ -246,8 +245,9 @@ async function cargarIA() {
     document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL || "Hola.";
     document.getElementById('status-text').innerText = "En línea 🟢";
     
-    userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH); // CORREGIDO
-    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER); // CORREGIDO
+    // *** CORRECCIÓN DE NOMBRES DE VARIABLES ***
+    userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH_INPUT); // Antes decía MAX_LENGTH
+    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER_INPUT); // Antes decía PLACEHOLDER
     
     toggleInput(true);
 
@@ -292,7 +292,9 @@ async function procesarMensaje() {
     }
 
     if (!textoUsuario) return;
-    if (textoUsuario.length < CONFIG.MIN_INPUT_LENGTH || textoUsuario.length > CONFIG.MAX_LENGTH) {
+    
+    // *** CORRECCIÓN DE NOMBRES DE VARIABLES ***
+    if (textoUsuario.length < CONFIG.MIN_LENGTH_INPUT || textoUsuario.length > CONFIG.MAX_LENGTH_INPUT) {
         userInput.value = '';
         return;
     }
@@ -347,21 +349,21 @@ async function procesarMensaje() {
 }
 
 async function llamarIA() {
-    const { MODELO, TEMPERATURA, MAX_RETRIES, URL_PROXY, TIMEOUT_MS, MAX_TOKENS_RESPONSE, MAX_HISTORIAL_MESSAGES } = CONFIG;
-    let delay = 500; // Asumiendo un delay inicial
+    const { MODELO, TEMPERATURA, RETRY_LIMIT, RETRY_DELAY_MS, URL_PROXY, TIMEOUT_MS, MAX_TOKENS_RESPONSE, MAX_HISTORIAL_MESSAGES } = CONFIG;
+    let delay = RETRY_DELAY_MS;
     
     let messages = [
         { role: "system", content: systemInstruction }
     ];
 
-    const contextStart = Math.max(0, conversationHistory.length - (CONFIG.MAX_HISTORIAL_MESSAGES || 10)); // Usando un fallback
+    const contextStart = Math.max(0, conversationHistory.length - MAX_HISTORIAL_MESSAGES);
     messages = messages.concat(conversationHistory.slice(contextStart));
 
 
-    for (let i = 0; i < (MAX_RETRIES || 3); i++) {
+    for (let i = 0; i < RETRY_LIMIT; i++) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS || 30000);
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
             const res = await fetch(URL_PROXY, {
                 method: 'POST',
@@ -370,7 +372,7 @@ async function llamarIA() {
                     model: MODELO,
                     messages: messages,
                     temperature: TEMPERATURA,
-                    max_tokens: MAX_TOKENS_RESPONSE || 1024,
+                    max_tokens: MAX_TOKENS_RESPONSE,
                     stream: false
                 }),
                 signal: controller.signal
@@ -387,7 +389,7 @@ async function llamarIA() {
             if (err.name === 'AbortError') {
                 throw new Error("API Timeout");
             }
-            if (i === (MAX_RETRIES || 3) - 1) throw err;
+            if (i === RETRY_LIMIT - 1) throw err;
             await new Promise(r => setTimeout(r, delay));
             delay *= 2;
         }
@@ -403,7 +405,7 @@ function agregarBurbuja(html, tipo) {
     const div = document.createElement('div');
     if (tipo === 'user') {
         div.className = "p-3 max-w-[85%] shadow-sm text-sm text-white rounded-2xl rounded-tr-none self-end ml-auto";
-        div.style.backgroundColor = CONFIG.COLOR_PRIMARIO; // CORREGIDO
+        div.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
         div.textContent = html;
     } else {
         div.className = "p-3 max-w-[85%] shadow-sm text-sm bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-tl-none self-start mr-auto bot-bubble";
