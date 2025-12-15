@@ -143,28 +143,43 @@ function setupAccessGate() {
         if (!sheetExpirationDate) return false;
         
         let dateString = sheetExpirationDate;
+        let expirationDate;
         
-        // Lógica de corrección para formato DD-MM-YYYY HH:mm:ss (Formato peruano local)
+        // 1. Lógica de corrección para formato DD-MM-YYYY HH:mm:ss (Formato peruano local)
+        // match[1]=Day, match[2]=Month, match[3]=Year, match[4]=Time
         const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}:\d{2}:\d{2})$/);
         
         if (match) {
-            // Reorganiza a YYYY-MM-DDTHH:mm:ss SIN OFFSET (utiliza la hora local de la PC)
-            const [full, day, month, year, time] = match;
-            dateString = `${year}-${month}-${day}T${time}`; 
-        } else if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
-            // Maneja el formato YYYY-MM-DD HH:mm:ss
-            dateString = dateString.replace(' ', 'T'); 
+            // Extrae los componentes numéricos
+            const day = parseInt(match[1]);
+            const month = parseInt(match[2]) - 1; // JS month es 0-indexed (Enero=0)
+            const year = parseInt(match[3]);
+            
+            // Extrae la hora, minutos y segundos de la cadena de tiempo
+            const timeMatch = match[4].match(/^(\d{2}):(\d{2}):(\d{2})$/);
+            const hours = parseInt(timeMatch[1]);
+            const minutes = parseInt(timeMatch[2]);
+            const seconds = parseInt(timeMatch[3]);
+
+            // **CORRECCIÓN CRÍTICA:** Usamos el constructor Date.UTC para forzar el tiempo local
+            // No, mejor usamos el constructor local: new Date(Y, M, D, H, m, s)
+            expirationDate = new Date(year, month, day, hours, minutes, seconds); 
+        
+        } else {
+             // 2. Fallback para otros formatos que JS pueda parsear
+             dateString = dateString.replace(' ', 'T'); 
+             expirationDate = new Date(dateString);
         }
 
-        const expirationDate = new Date(dateString); 
         const now = new Date(); 
         
-        if (isNaN(expirationDate)) {
+        // Comprueba si la fecha creada es válida
+        if (isNaN(expirationDate.getTime())) { 
              console.error("Fecha de expiración inválida en Sheet:", sheetExpirationDate);
              return false;
         }
         
-        // CORRECCIÓN CRÍTICA: Usa >= para incluir el momento exacto de la expiración
+        // Usa >= para incluir el momento exacto de la expiración
         return now.getTime() >= expirationDate.getTime();
     };
 
