@@ -19,9 +19,9 @@ export const APP_CONFIG = {
 export const UI_CONFIG = {
     // Branding Visual
     COLOR_PRIMARIO: "#ea580c",              // Color de acento principal (botones, header, burbujas del usuario).
-    ICONO_HEADER: "PP",                     // Texto o Emoji que aparece en el header del chat (Fallback si no hay LOGO_URL).
+    ICONO_HEADER: "FC",                     // Texto o Emoji que aparece en el header del chat (Fallback si no hay LOGO_URL).
     FAVICON_EMOJI: "🐔",                    // Icono que sale en la pestaña del navegador.
-    LOGO_URL: "",                           // URL completa a un logo de imagen (ej: "https://tudominio.com/logo.png"). Dejar "" para usar ICONO_HEADER.
+    LOGO_URL: "https://i.ibb.co/W4m7vxxn/logo-frankos-chicken.jpg",                           // URL completa a un logo de imagen (ej: "https://tudominio.com/logo.png"). Dejar "" para usar ICONO_HEADER.
     
     // Textos Estáticos (Visibles al Cliente)
     SALUDO_INICIAL: "¡Hola! Bienvenido a Frankos Chicken. ¿En qué puedo ayudarte hoy?",
