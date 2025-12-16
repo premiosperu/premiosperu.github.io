@@ -1,34 +1,24 @@
 import { CONFIG } from './config.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
-// --- Estado Global ---
-let systemInstruction = "", conversationHistory = [], messageCount = 0, requestTimestamps = [], longWaitTimeoutId; 
+// --- Constantes Fijas del Sistema ---
+const MOCK_RESPONSES = [
+    "¡Hola! Esta es una respuesta simulada para mostrarte cómo luce el chat. 😊",
+    "Entiendo perfectamente tu consulta, pero recuerda que ahora estoy en modo de prueba.",
+    "Como asistente virtual en demo, puedo decirte que el diseño se adapta a cualquier dispositivo.",
+    "¡Qué buena pregunta! En la versión real, analizaría esto con inteligencia artificial avanzada.",
+    "Llegaste al límite de la demostración. ¿Te gustaría activar la IA real ahora?"
+];
+
+let systemInstruction = "", conversationHistory = [], messageCount = 0, requestTimestamps = [];
 const userInput = document.getElementById('userInput'), sendBtn = document.getElementById('sendBtn'), chatContainer = document.getElementById('chat-container');
-const chatInterface = document.getElementById('chat-interface'), feedbackDemoText = document.getElementById('feedback-demo-text'), WA_LINK = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}`;
+const feedbackDemoText = document.getElementById('feedback-demo-text'), WA_LINK = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}`;
 
-// --- Gestión de Interfaz ---
-function handleScroll() {
-    const observer = new MutationObserver(() => { observer.disconnect(); chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }); });
-    observer.observe(chatContainer, { childList: true });
-}
-
-// CORRECCIÓN: Lógica de feedback con precisión humana
-function updateDemoFeedback(count) {
-    if (!CONFIG.SHOW_REMAINING_MESSAGES || !feedbackDemoText) return;
-    const remaining = CONFIG.MAX_DEMO_MESSAGES - count;
-
-    if (remaining <= 0) {
-        feedbackDemoText.innerText = `🛑 Has alcanzado el límite de ${CONFIG.MAX_DEMO_MESSAGES} mensajes. Contáctanos para continuar.`;
-        feedbackDemoText.style.color = 'red';
-        feedbackDemoText.style.fontWeight = 'bold';
-    } else if (remaining <= CONFIG.WARNING_THRESHOLD) {
-        feedbackDemoText.innerText = `⚠️ Atención: Te queda ${remaining} mensaje(s) de demostración.`;
-        feedbackDemoText.style.color = CONFIG.COLOR_PRIMARIO;
-        feedbackDemoText.style.fontWeight = 'normal';
-    } else {
-        feedbackDemoText.innerText = ''; // Limpiar si no estamos en el umbral
-    }
-}
+// --- Inicialización ---
+window.onload = () => {
+    aplicarConfiguracionGlobal();
+    cargarIA();
+};
 
 function aplicarConfiguracionGlobal() {
     document.title = CONFIG.NOMBRE_EMPRESA;
@@ -38,66 +28,36 @@ function aplicarConfiguracionGlobal() {
         headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" alt="${CONFIG.NOMBRE_EMPRESA}" class="w-full h-full object-contain rounded-full">`;
     } else if (headerIcon) { headerIcon.innerText = CONFIG.ICONO_HEADER; }
     document.getElementById('header-title').innerText = CONFIG.NOMBRE_EMPRESA;
+    
+    const linkIcon = document.querySelector("link[rel*='icon']");
+    if (linkIcon) {
+        linkIcon.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${CONFIG.FAVICON_EMOJI}</text></svg>`;
+    }
 }
 
-// --- Seguridad y Acceso ---
-function setupAccessGate() {
-    const keySubmit = document.getElementById('keySubmit'), keyInput = document.getElementById('keyInput'), keyError = document.getElementById('keyError');
-    keySubmit.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
-    keyInput.setAttribute('autocomplete', 'one-time-code'); 
-    keyInput.setAttribute('name', 'access_token_' + Math.random().toString(36).substring(7));
-
-    const validarAcceso = async () => {
-        const inputKey = keyInput.value.trim(); 
-        if (!inputKey) { keyError.innerText = "Ingresa una clave."; keyError.classList.remove('hidden'); return; }
-        try {
-            const res = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`);
-            const text = await res.text(), json = JSON.parse(text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1'));
-            const row = json.table.rows[1]?.c || json.table.rows[0]?.c || [];
-            const realKey = String(row[0]?.v || "").trim();
-            if (inputKey === realKey) {
-                document.getElementById('access-gate').classList.add('hidden');
-                chatInterface.classList.remove('hidden'); cargarIA();
-            } else { keyError.innerText = "Clave incorrecta."; keyError.classList.remove('hidden'); }
-        } catch (e) { keyError.innerText = "Error de conexión."; keyError.classList.remove('hidden'); }
-    };
-    keySubmit.onclick = validarAcceso;
-    keyInput.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); validarAcceso(); } };
-}
-
-// --- Lógica de IA ---
 async function cargarIA() {
     try {
         const res = await fetch('./prompt.txt');
         systemInstruction = res.ok ? await res.text() : "";
         document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL;
-        userInput.setAttribute('autocomplete', 'off');
-        userInput.setAttribute('name', 'chat_query_' + Date.now());
-        toggleInput(true); updateDemoFeedback(0);
+        userInput.placeholder = CONFIG.PLACEHOLDER_INPUT;
+        userInput.maxLength = CONFIG.MAX_LENGTH_INPUT;
+        toggleInput(true); 
+        updateDemoFeedback(0);
         sendBtn.onclick = procesarMensaje;
         userInput.onkeydown = (e) => { if (e.key === 'Enter') procesarMensaje(); };
-    } catch (e) { console.error("Error inicializando IA"); }
+    } catch (e) { console.error("Error inicializando el sistema."); }
 }
 
+// --- Lógica Dual ---
 async function procesarMensaje() {
     const text = userInput.value.trim();
-    
-    // BLOQUEO PREVENTIVO: Solo si ya se agotaron los mensajes
-    if (messageCount >= CONFIG.MAX_DEMO_MESSAGES) {
-        updateDemoFeedback(messageCount);
-        toggleInput(false);
-        return;
-    }
-
-    if (text.length < CONFIG.MIN_LENGTH_INPUT) return;
+    if (messageCount >= CONFIG.MAX_DEMO_MESSAGES || text.length < CONFIG.MIN_LENGTH_INPUT) return;
 
     // Rate Limit
     const now = Date.now(), windowMs = CONFIG.RATE_LIMIT_WINDOW_SECONDS * 1000;
     requestTimestamps = requestTimestamps.filter(t => t > now - windowMs);
-    if (requestTimestamps.length >= CONFIG.RATE_LIMIT_MAX_REQUESTS) {
-        agregarBurbuja(`⚠️ Espera ${Math.ceil((requestTimestamps[0] + windowMs - now) / 1000)}s.`, 'bot');
-        return;
-    }
+    if (requestTimestamps.length >= CONFIG.RATE_LIMIT_MAX_REQUESTS) return;
     requestTimestamps.push(now);
 
     agregarBurbuja(text, 'user');
@@ -106,60 +66,56 @@ async function procesarMensaje() {
     const loadingId = mostrarLoading();
 
     try {
-        const respuesta = await llamarIA(loadingId);
-        clearTimeout(longWaitTimeoutId);
+        let respuesta;
+        if (CONFIG.DEMO_MODE) {
+            await new Promise(r => setTimeout(r, 1200)); // Simulación de carga
+            respuesta = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
+        } else {
+            respuesta = await llamarIA();
+        }
+
         document.getElementById(loadingId)?.remove();
-        
+        agregarBurbuja(marked.parse(respuesta), 'bot');
         conversationHistory.push({ role: "assistant", content: respuesta });
-        const clean = respuesta.replace('[whatsapp]', 'Escríbenos por WhatsApp.');
-        const btn = respuesta.includes('[whatsapp]') ? `<a href="${WA_LINK}?text=Ayuda: ${encodeURIComponent(text)}" target="_blank" class="chat-btn">WhatsApp</a>` : "";
-        
-        agregarBurbuja(marked.parse(clean) + btn, 'bot');
-        
-        // INCREMENTO: Solo sumamos cuando la IA responde con éxito
         messageCount++;
         updateDemoFeedback(messageCount);
-
     } catch (e) {
-        clearTimeout(longWaitTimeoutId);
         document.getElementById(loadingId)?.remove();
         if (messageCount < CONFIG.MAX_DEMO_MESSAGES) {
-            agregarBurbuja(marked.parse("¡Ups! Hubo un problema de conexión."), 'bot');
+            agregarBurbuja("¡Ups! Hubo un problema de conexión.", 'bot');
         }
     } finally {
-        // DECISIÓN DE BLOQUEO: Solo bloquea si se llegó al límite real
         const canContinue = messageCount < CONFIG.MAX_DEMO_MESSAGES;
         toggleInput(canContinue);
-        if (canContinue) {
-            userInput.focus();
-        } else {
-            updateDemoFeedback(messageCount); // Asegura banner de fin
-        }
+        if (canContinue) userInput.focus();
     }
 }
 
-async function llamarIA(loadingId) {
-    let delay = CONFIG.RETRY_DELAY_MS;
+async function llamarIA() {
     const messages = [{ role: "system", content: systemInstruction }, ...conversationHistory.slice(-CONFIG.MAX_HISTORIAL_MESSAGES)];
-    for (let i = 0; i <= CONFIG.RETRY_LIMIT; i++) {
-        try {
-            const ctrl = new AbortController(), tId = setTimeout(() => ctrl.abort(), CONFIG.TIMEOUT_MS);
-            const res = await fetch(CONFIG.URL_PROXY, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: CONFIG.MODELO, messages, temperature: CONFIG.TEMPERATURA,
-                    max_tokens: CONFIG.MAX_TOKENS_RESPONSE
-                }),
-                signal: ctrl.signal
-            });
-            clearTimeout(tId); if (!res.ok) throw new Error();
-            const data = await res.json(); return data.choices[0].message.content;
-        } catch (err) {
-            if (i === CONFIG.RETRY_LIMIT) throw err;
-            await new Promise(r => setTimeout(r, delay));
-            delay *= 2;
-        }
+    const res = await fetch(CONFIG.URL_PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: CONFIG.MODELO, messages, temperature: CONFIG.TEMPERATURA,
+            max_tokens: CONFIG.MAX_TOKENS_RESPONSE
+        })
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    return data.choices[0].message.content;
+}
+
+// --- UI Auxiliares ---
+function updateDemoFeedback(count) {
+    if (!CONFIG.SHOW_REMAINING_MESSAGES) return;
+    const remaining = CONFIG.MAX_DEMO_MESSAGES - count;
+    if (remaining <= 0) {
+        feedbackDemoText.innerText = `🛑 Has alcanzado el límite de mensajes.`;
+        feedbackDemoText.style.color = "red";
+    } else if (remaining <= CONFIG.WARNING_THRESHOLD) {
+        feedbackDemoText.innerText = `⚠️ Te queda(n) ${remaining} mensaje(s) de prueba.`;
+        feedbackDemoText.style.color = CONFIG.COLOR_PRIMARIO;
     }
 }
 
@@ -170,19 +126,15 @@ function agregarBurbuja(html, tipo) {
     div.className = tipo === 'user' ? "p-3 max-w-[85%] text-sm text-white rounded-2xl rounded-tr-none self-end ml-auto shadow-sm" : "p-3 max-w-[85%] text-sm bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start bot-bubble shadow-sm";
     if (tipo === 'user') { div.style.backgroundColor = CONFIG.COLOR_PRIMARIO; div.textContent = html; }
     else { div.innerHTML = html; }
-    chatContainer.appendChild(div); handleScroll();
+    chatContainer.appendChild(div);
+    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
 }
 
 function mostrarLoading() {
     const id = 'load-' + Date.now(), div = document.createElement('div');
     div.id = id; div.className = "p-3 max-w-[85%] bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start flex gap-1 shadow-sm";
     div.innerHTML = `<div class="w-2 h-2 rounded-full typing-dot"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.2s"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.4s"></div>`;
-    chatContainer.appendChild(div); handleScroll();
+    chatContainer.appendChild(div);
+    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
     return id;
 }
-
-window.onload = () => {
-    aplicarConfiguracionGlobal();
-    if (CONFIG.SHEET_ID) setupAccessGate();
-    else { document.getElementById('access-gate').classList.add('hidden'); chatInterface.classList.remove('hidden'); cargarIA(); }
-};
