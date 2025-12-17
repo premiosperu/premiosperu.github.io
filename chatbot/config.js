@@ -1,6 +1,6 @@
 export const CONFIG = {
   
-  NOMBRE_EMPRESA: "Frankos Chicken", //ffsfsd
+  NOMBRE_EMPRESA: "Frankos Chicken",
   WHATSAPP_NUMERO: "51949973277",
   COLOR_PRIMARIO: "#ea580c",
   ICONO_HEADER: "FC",
