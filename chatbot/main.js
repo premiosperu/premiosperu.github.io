@@ -2,14 +2,14 @@ import { CONFIG } from './config.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
 const MOCK_RESPONSES = [
-    "¡Hola! Esta es una respuesta simulada para Frankos Chicken. 😊",
-    "Nuestros pollos a la brasa son los más crujientes de la zona.",
-    "Puedes realizar tu pedido por WhatsApp en cualquier momento.",
-    "¿Te gustaría conocer nuestras promociones del día?",
-    "Llegaste al límite de la demo. ¡Activa la IA real para conversar más!"
+    "¡Hola! Soy Fedeliza, tu asesora en Frankos Chicken. 😊",
+    "¿Deseas conocer nuestros combos personales o familiares?",
+    "Nuestros pollos a la brasa son los favoritos de la ciudad.",
+    "Recuerda que puedes pedir por WhatsApp para una atención más rápida.",
+    "Has llegado al límite de la demo. ¡Contáctanos para activar el bot real!"
 ];
 
-let systemInstruction = "", conversationHistory = [], messageCount = 0;
+let systemInstruction = "", messageCount = 0;
 const userInput = document.getElementById('userInput'), 
       sendBtn = document.getElementById('sendBtn'), 
       chatContainer = document.getElementById('chat-container'),
@@ -25,23 +25,21 @@ function aplicarConfiguracionGlobal() {
     document.title = CONFIG.NOMBRE_EMPRESA;
     const headerTitle = document.getElementById('header-title');
     if (headerTitle) headerTitle.innerText = CONFIG.NOMBRE_EMPRESA;
-
     const headerIcon = document.getElementById('header-icon-initials');
     if (CONFIG.LOGO_URL && headerIcon) {
-        headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" class="w-full h-full object-cover">`;
+        headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" class="w-full h-full object-cover rounded-full">`;
     } else if (headerIcon) {
         headerIcon.innerText = CONFIG.ICONO_HEADER;
     }
-    userInput.placeholder = CONFIG.PLACEHOLDER_INPUT;
 }
 
-// Función Vital: Baja el scroll al final de forma inmediata
 function scrollToBottom() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 async function cargarIA() {
     try {
+        // Carga de prompt usando la versión del config
         const res = await fetch(`./prompt.txt?v=${CONFIG.VERSION}`);
         systemInstruction = res.ok ? await res.text() : "";
         document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL;
@@ -73,14 +71,12 @@ async function enviarMensaje() {
         eliminarLoading(loadId);
         const reply = MOCK_RESPONSES[Math.min(messageCount - 1, MOCK_RESPONSES.length - 1)];
         agregarBurbuja(marked.parse(reply), 'bot');
-        scrollToBottom(); // Bajamos después de que el bot responde
+        scrollToBottom();
     }, 1000);
 }
 
 sendBtn.onclick = enviarMensaje;
 userInput.onkeypress = (e) => { if (e.key === 'Enter') enviarMensaje(); };
-
-// Si el usuario toca el input en móvil, bajamos el scroll tras un breve delay (esperando al teclado)
 userInput.onfocus = () => { setTimeout(scrollToBottom, 300); };
 
 function agregarBurbuja(html, tipo) {
@@ -113,5 +109,4 @@ function toggleInput(s) { userInput.disabled = !s; sendBtn.disabled = !s; }
 function actualizarContadorDemo() {
     const remaining = CONFIG.MAX_DEMO_MESSAGES - messageCount;
     feedbackDemoText.innerText = remaining > 0 ? `DEMO: ${remaining} MENSAJES RESTANTES` : "LÍMITE ALCANZADO";
-    if (remaining <= 0) feedbackDemoText.classList.replace('text-orange-500', 'text-red-600');
 }
