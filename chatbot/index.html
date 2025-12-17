@@ -6,15 +6,25 @@
     <title>Cargando...</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
-        import { CONFIG } from './config.js';
+        // Importamos la configuración con un bypass de caché solo para leer la versión actual
+        import { CONFIG } from './config.js?t=' + Date.now();
+        
+        const V = CONFIG.VERSION;
+
+        // Configuración de Favicon y Título
         const link = document.createElement('link');
         link.rel = 'icon';
         link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${CONFIG.FAVICON_EMOJI}</text></svg>`;
         document.head.appendChild(link);
         document.title = CONFIG.NOMBRE_EMPRESA;
+
+        // Carga dinámica de main.js usando la versión definida en config.js
+        const mainScript = document.createElement('script');
+        mainScript.type = 'module';
+        mainScript.src = `./main.js?v=${V}`;
+        document.head.appendChild(mainScript);
     </script>
     <style>
-        /* CSS Limpio: Sin position fixed para evitar bugs de scroll y teclado */
         html, body {
             min-height: 100dvh;
             margin: 0;
@@ -22,24 +32,18 @@
             overflow: hidden;
             background-color: #f3f4f6;
         }
-
-        /* Evita el zoom automático en iPhone al tocar el campo de texto */
         #userInput { font-size: 16px !important; }
-
-        .bot-bubble img { max-width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; }
+        .bot-bubble img { max-width: 100%; height: auto; border-radius: 0.5rem; margin-top: 0.5rem; }
+        .typing-dot { width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: typing 1.4s infinite; }
+        @keyframes typing { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-4px); opacity: 1; } }
         #chat-container::-webkit-scrollbar { width: 4px; }
         #chat-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
-        
-        .typing-dot { width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
-        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
-
-<body class="flex flex-col">
-    <div id="chat-interface" class="flex flex-col min-h-[100dvh] max-w-2xl mx-auto w-full bg-white shadow-xl overflow-hidden">
-        
-        <header class="p-4 flex items-center gap-3 border-b text-white shadow-md shrink-0" id="main-header" style="background-color: var(--chat-color)">
-            <div id="header-icon-initials" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold overflow-hidden"></div>
+<body>
+    <div class="flex flex-col h-[100dvh] max-w-md mx-auto bg-white shadow-2xl relative">
+        <header class="p-4 border-b flex items-center gap-3 bg-white shrink-0">
+            <div id="header-icon-initials" class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold overflow-hidden"></div>
             <h1 id="header-title" class="font-semibold text-lg tracking-tight"></h1>
         </header>
 
@@ -61,6 +65,5 @@
             </div>
         </footer>
     </div>
-    <script type="module" src="main.js"></script>
 </body>
 </html>
