@@ -539,13 +539,19 @@
         const WHATSAPP_PHONE = "51950141414"; 
 
 
-        // --- 2. LÓGICA "MODO ADMIN" (REDIRECCIÓN) ---
-        // Esto verifica si la URL termina en #admin
-        window.addEventListener('hashchange', () => {
-        if (window.location.hash === '#admin') {
-                window.location.href = GOOGLE_SHEET_EDIT_URL;
-        }
-            });
+// --- 2. LÓGICA "MODO ADMIN" (REDIRECCIÓN) ---
+
+function checkAdminHash() {
+    if (window.location.hash === '#admin') {
+        window.location.href = GOOGLE_SHEET_EDIT_URL;
+    }
+}
+
+// 1. Detectar si entra directamente con el link: oficial.pe/catalogo#admin
+document.addEventListener('DOMContentLoaded', checkAdminHash);
+
+// 2. Detectar si cambia el hash mientras ya está navegando la página
+window.addEventListener('hashchange', checkAdminHash);
         
         // --- DATOS DE RESPALDO (Por si falla la hoja) ---
         const MOCK_DATA = [
