@@ -3,69 +3,66 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Catálogo Luxe | Pro Mobile</title>
+<title>Luxe | Catálogo Inteligente</title>
 <style>
-  :root { --radius: 14px; --bg: #fafafa; --max-width: 1200px; --accent: #000; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; }
+  :root { --radius: 14px; --bg: #fafafa; --max-width: 1200px; --accent: #222; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; overflow-x: hidden; }
 
-  /* CABECERA COMPACTA */
-  header { background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; width: 100%; }
+  /* CABECERA FIJA Y ALINEADA */
+  header { background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; width: 100%; }
   .header-content {
-    max-width: var(--max-width); margin: 0 auto; padding: 10px 16px;
-    display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+    max-width: var(--max-width); margin: 0 auto; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
+  }
+  .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; }
+
+  /* CONTROLES EN DESKTOP */
+  .header-controls { display: flex; gap: 10px; flex-grow: 1; max-width: 600px; margin-left: 40px; }
+  .header-controls input, .header-controls select {
+    padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; width: 100%;
   }
 
-  .search-wrapper { flex-grow: 1; position: relative; }
-  header input {
-    padding: 10px 15px; border: 1px solid #ccc; border-radius: 12px; font-size: 14px; 
-    outline: none; background: #fdfdfd; width: 100%; box-sizing: border-box;
+  /* ICONO HAMBURGUESA (Solo móvil) */
+  .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px; }
+
+  /* PANEL LATERAL (MOBILE DRAWER) */
+  .mobile-drawer {
+    position: fixed; top: 0; right: -100%; width: 280px; height: 100%;
+    background: #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    z-index: 200; transition: 0.3s ease; padding: 25px; box-sizing: border-box;
+  }
+  .mobile-drawer.active { right: 0; }
+  .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+  .drawer-content { display: flex; flex-direction: column; gap: 20px; }
+  .drawer-content label { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #888; }
+  .overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.5); display: none; z-index: 150; 
+  }
+  .overlay.active { display: block; }
+
+  /* VISTA MÓVIL */
+  @media(max-width: 768px) {
+    .header-controls { display: none; } /* Oculta buscador normal */
+    .menu-toggle { display: block; }    /* Muestra hamburguesa */
   }
 
-  /* BOTÓN DE CATEGORÍAS (ICONO) */
-  .filter-btn {
-    background: #f0f0f0; border: 1px solid #ccc; border-radius: 12px;
-    width: 42px; height: 42px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s; position: relative; flex-shrink: 0;
-  }
-  .filter-btn:active { background: #e0e0e0; }
-  .filter-btn svg { width: 20px; height: 20px; fill: #333; }
-
-  /* DESPLEGABLE FLOTANTE */
-  #categoryMenu {
-    position: absolute; top: 55px; right: 16px; 
-    background: #fff; border: 1px solid #ddd; border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    min-width: 180px; display: none; flex-direction: column;
-    overflow: hidden; z-index: 1100;
-  }
-  #categoryMenu.show { display: flex; animation: fadeIn 0.2s ease; }
-  .cat-option {
-    padding: 12px 16px; font-size: 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5;
-    background: none; text-align: left; border-right: none; border-left: none; border-top: none; width: 100%;
-  }
-  .cat-option:hover { background: #f9f9f9; }
-  .cat-option.active { background: #eee; font-weight: bold; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* CONTENEDOR Y GRID */
+  /* GRILLA DE PRODUCTOS */
   .container { max-width: var(--max-width); margin: 20px auto; padding: 0 16px; box-sizing: border-box; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; align-items: stretch; }
   
   .card { 
-    background: #fff; border: 1px solid #eee; border-radius: var(--radius); 
-    padding: 16px; display: flex; flex-direction: column; height: 100%;
-    transition: transform 0.2s; box-sizing: border-box;
+    background: #fff; border: 1px solid #eee; border-radius: var(--radius); padding: 16px; 
+    display: flex; flex-direction: column; height: 100%; transition: 0.2s;
   }
   .thumb { 
-    width: 100%; aspect-ratio: 1/1; background: linear-gradient(135deg, #eee, #ddd); 
-    border-radius: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 1/1; background: #eee; border-radius: 10px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center;
   }
   .thumb::after { content: '👜'; font-size: 2.5rem; opacity: 0.2; }
   .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-  .description { font-size: 13.5px; color: #555; line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px; flex-grow: 1; }
-  .price { font-weight: 700; font-size: 1.2rem; border-top: 1px solid #f0f0f0; padding-top: 12px; margin-top: auto; }
+  .description { font-size: 13.5px; color: #555; line-height: 1.5; white-space: pre-wrap; flex-grow: 1; margin-bottom: 15px; }
+  .price { font-weight: 700; font-size: 1.2rem; border-top: 1px solid #f0f0f0; padding-top: 12px; }
   
   .hidden { display: none !important; }
   #status { text-align: center; padding: 40px; color: #888; }
@@ -75,17 +72,37 @@
 
 <header>
   <div class="header-content">
-    <div class="search-wrapper">
-      <input id="search" type="text" placeholder="Buscar productos..." />
+    <div class="logo">LUXE BAGS</div>
+    
+    <div class="header-controls">
+      <input type="text" class="search-input" placeholder="Buscar carteras..." />
+      <select class="category-select"><option value="todas">Todas</option></select>
     </div>
-    <button class="filter-btn" id="filterBtn" title="Filtrar categorías">
-      <svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h18V5H3zm0 7h12v-2H3v2z"/></svg>
-    </button>
-    <div id="categoryMenu">
-      <button class="cat-option active" data-value="todas">Todas</button>
-      </div>
+
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
   </div>
 </header>
+
+<div class="overlay" onclick="toggleMenu()"></div>
+
+<div class="mobile-drawer" id="menuDrawer">
+  <div class="drawer-header">
+    <span style="font-weight: bold;">FILTROS</span>
+    <button onclick="toggleMenu()" style="background:none; border:none; font-size:20px;">✕</button>
+  </div>
+  <div class="drawer-content">
+    <div>
+      <label>BUSCAR</label>
+      <input type="text" class="search-input" placeholder="Nombre o color..." style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:8px;">
+    </div>
+    <div>
+      <label>CATEGORÍA</label>
+      <select class="category-select" style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:8px;">
+        <option value="todas">Todas</option>
+      </select>
+    </div>
+  </div>
+</div>
 
 <main class="container">
   <div id="status">Cargando productos...</div>
@@ -100,12 +117,15 @@
 
   const grid = document.getElementById('products');
   const status = document.getElementById('status');
-  const menu = document.getElementById('categoryMenu');
-  const filterBtn = document.getElementById('filterBtn');
+  const categorySelects = document.querySelectorAll('.category-select');
+  const searchInputs = document.querySelectorAll('.search-input');
 
   const limpiarTexto = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-  let selectedCategory = 'todas';
+  function toggleMenu() {
+    document.getElementById('menuDrawer').classList.toggle('active');
+    document.querySelector('.overlay').classList.toggle('active');
+  }
 
   async function init() {
     try {
@@ -113,7 +133,6 @@
       const csvText = await resp.text();
       const rows = parseCSV(csvText);
       const productsData = rows.slice(1);
-
       const categories = new Set();
 
       grid.innerHTML = productsData.map(col => {
@@ -134,41 +153,25 @@
         `;
       }).join('');
 
-      // Generar menú de categorías
+      // Llenar ambos selectores (Desktop y Mobile)
       categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'cat-option';
-        btn.textContent = cat;
-        btn.dataset.value = limpiarTexto(cat);
-        btn.onclick = () => selectCat(btn.dataset.value, btn);
-        menu.appendChild(btn);
+        categorySelects.forEach(select => {
+          const option = document.createElement('option');
+          option.value = limpiarTexto(cat);
+          option.textContent = cat;
+          select.appendChild(option);
+        });
       });
 
       status.style.display = 'none';
       setupLogic();
     } catch (e) {
-      status.innerHTML = "⚠️ Error de conexión.";
+      status.innerHTML = "⚠️ Error al cargar el catálogo.";
     }
   }
 
-  // Lógica de apertura/cierre del menú
-  filterBtn.onclick = (e) => {
-    e.stopPropagation();
-    menu.classList.toggle('show');
-  };
-  document.onclick = () => menu.classList.remove('show');
-
-  function selectCat(val, el) {
-    selectedCategory = val;
-    document.querySelectorAll('.cat-option').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    menu.classList.remove('show');
-    runFilter();
-  }
-
   function parseCSV(text) {
-    const result = [];
-    let row = [], field = '', inQuotes = false;
+    const result = []; let row = []; let field = ''; let inQuotes = false;
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
       if (inQuotes) {
@@ -187,21 +190,28 @@
   }
 
   function setupLogic() {
-    const search = document.getElementById('search');
-    search.addEventListener('input', runFilter);
-  }
-
-  function runFilter() {
-    const q = limpiarTexto(document.getElementById('search').value);
     const items = [...document.querySelectorAll('.card')];
+    
+    function runFilter(e) {
+      // Sincronizar inputs (si escribo en uno, se copia al otro)
+      const val = e.target.value;
+      const isSearch = e.target.classList.contains('search-input');
+      
+      if(isSearch) searchInputs.forEach(i => i.value = val);
+      else categorySelects.forEach(s => s.value = val);
 
-    items.forEach(card => {
-      const content = card.dataset.fulltext;
-      const category = card.dataset.category;
-      const matchesText = !q || content.includes(q);
-      const matchesCat = selectedCategory === 'todas' || category === selectedCategory;
-      card.classList.toggle('hidden', !(matchesText && matchesCat));
-    });
+      const q = limpiarTexto(searchInputs[0].value);
+      const cat = categorySelects[0].value;
+
+      items.forEach(card => {
+        const matchesText = !q || card.dataset.fulltext.includes(q);
+        const matchesCat = cat === 'todas' || card.dataset.category === cat;
+        card.classList.toggle('hidden', !(matchesText && matchesCat));
+      });
+    }
+
+    searchInputs.forEach(i => i.addEventListener('input', runFilter));
+    categorySelects.forEach(s => s.addEventListener('change', runFilter));
   }
 
   init();
