@@ -56,12 +56,12 @@
   .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 45px; }
   .description { font-size: 13.5px; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
 
-  /* PRECIOS REDUCIDOS EN UNA LÍNEA */
+  /* PRECIOS: OFERTA PRIMERO, LUEGO TACHADO */
   .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 8px; }
-  .old-price { font-size: 1rem; color: #999; text-decoration: line-through; font-weight: 400; }
   .current-price { font-weight: 700; font-size: 1.1rem; color: #000; }
+  .old-price { font-size: 1.1rem; color: #999; text-decoration: line-through; font-weight: 400; }
 
-  /* BOTÓN CUADRADO SUTIL */
+  /* BOTÓN ACCIÓN CUADRADO */
   .btn-action {
     position: absolute; bottom: 12px; right: 18px;
     width: 34px; height: 34px;
@@ -148,7 +148,7 @@
             <div class="description">${desc}</div>
             <div class="price-container">
               ${hasOferta 
-                ? `<span class="old-price">${formatoPrecio(precioRaw)}</span> <span class="current-price">${formatoPrecio(ofertaRaw)}</span>` 
+                ? `<span class="current-price">${formatoPrecio(ofertaRaw)}</span> <span class="old-price">${formatoPrecio(precioRaw)}</span>` 
                 : `<span class="current-price">${formatoPrecio(precioRaw)}</span>`
               }
             </div>
