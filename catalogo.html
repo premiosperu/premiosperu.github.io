@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Catálogo Luxe | Inteligente</title>
+<title>Catálogo Luxe | Final</title>
 <style>
   :root { --radius: 12px; --bg: #fafafa; --max-width: 1200px; }
   body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; }
 
-  /* CABECERA */
   header { 
     background: #fff; border-bottom: 1px solid #ddd; 
     position: sticky; top: 0; z-index: 1000; width: 100%; 
@@ -16,7 +15,6 @@
   .header-content {
     max-width: var(--max-width); margin: 0 auto; padding: 10px 16px;
     display: flex; align-items: center; gap: 10px; box-sizing: border-box;
-    position: relative;
   }
 
   .search-wrapper { flex-grow: 1; }
@@ -24,52 +22,60 @@
     width: 100%; padding: 11px 16px; border: 1px solid #eee; border-radius: 10px;
     font-size: 15px; outline: none; background: #f2f2f2; transition: 0.2s; box-sizing: border-box;
   }
-  .search-input:focus { background: #fff; border-color: #ccc; }
 
-  /* SELECTOR CATEGORÍAS (Escritorio) */
-  .cat-desktop { width: 200px; display: block; }
-
-  /* BOTÓN HAMBURGUESA (Móvil) */
-  .menu-toggle {
-    display: none; background: #f2f2f2; color: #666; border: none; border-radius: 10px;
-    width: 44px; height: 44px; font-size: 20px; cursor: pointer;
-    align-items: center; justify-content: center; flex-shrink: 0;
+  /* CATEGORÍAS */
+  .cat-select { 
+    padding: 11px; border: 1px solid #eee; border-radius: 10px; 
+    background: #f2f2f2; font-size: 14px; cursor: pointer; outline: none;
   }
+  
+  /* MOSTRAR/OCULTAR SEGÚN PANTALLA */
+  .desktop-cat { width: 180px; display: block; }
+  .mobile-menu-wrapper { display: none; position: relative; }
 
-  /* DESPLEGABLE FLOTANTE MÓVIL */
-  .mobile-dropdown {
-    display: none; position: absolute; top: 100%; right: 16px; width: 200px;
-    background: #fff; border: 1px solid #ddd; border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 10px; z-index: 2000;
-  }
-  .mobile-dropdown.active { display: block; }
-  .mobile-dropdown label { font-size: 11px; font-weight: 700; color: #999; display: block; margin-bottom: 5px; }
-
-  /* RESPONSIVE */
   @media(max-width: 768px) {
-    .cat-desktop { display: none; }
-    .menu-toggle { display: flex; }
+    .desktop-cat { display: none; }
+    .mobile-menu-wrapper { display: block; }
+    /* Estilo para que el select sea invisible pero cubra el botón de hamburguesa */
+    .mobile-cat-native {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; appearance: none;
+    }
+    .hamburger-icon {
+      width: 44px; height: 44px; background: #f2f2f2; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: #666; font-size: 20px;
+    }
   }
 
-  /* GRILLA DE PRODUCTOS */
-  .container { max-width: var(--max-width); margin: 20px auto; padding: 0 16px; box-sizing: border-box; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; align-items: stretch; }
+  /* GRILLA DE PRODUCTOS - ESPACIADO CORREGIDO */
+  .container { max-width: var(--max-width); margin: 25px auto; padding: 0 16px; box-sizing: border-box; }
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+    gap: 25px; /* Espacio entre fichas */
+    align-items: stretch; 
+  }
   
   .card { 
-    background: #fff; border: 1px solid #eee; border-radius: var(--radius); padding: 16px; 
-    display: flex; flex-direction: column; height: 100%; transition: 0.2s;
+    background: #fff; border: 1px solid #eee; border-radius: var(--radius); padding: 18px; 
+    display: flex; flex-direction: column; height: 100%; transition: 0.2s; box-sizing: border-box;
   }
+  
   .thumb { 
-    width: 100%; aspect-ratio: 1/1; background: #f5f5f5; border-radius: 8px; margin-bottom: 12px;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 1/1; background: #f0f0f0; border-radius: 8px; margin-bottom: 15px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .thumb::after { content: '👜'; font-size: 2.2rem; opacity: 0.2; }
-  .title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
-  .description { font-size: 13px; color: #555; line-height: 1.5; white-space: pre-wrap; flex-grow: 1; margin-bottom: 15px; }
-  .price { font-weight: 700; font-size: 1.1rem; border-top: 1px solid #f9f9f9; padding-top: 12px; }
+  
+  .title { font-weight: 700; font-size: 16px; margin-bottom: 10px; }
+  .description { 
+    font-size: 13.5px; color: #555; line-height: 1.6; 
+    white-space: pre-wrap; flex-grow: 1; margin-bottom: 20px; 
+  }
+  .price { font-weight: 700; font-size: 1.2rem; border-top: 1px solid #f2f2f2; padding-top: 15px; }
   
   .hidden { display: none !important; }
-  #status { text-align: center; padding: 40px; color: #999; }
+  #status { text-align: center; padding: 50px; color: #999; }
 </style>
 </head>
 <body>
@@ -80,15 +86,13 @@
       <input type="text" class="search-input" id="mainSearch" placeholder="Buscar productos..." />
     </div>
 
-    <select class="search-input cat-desktop" id="catDesktop">
+    <select class="cat-select desktop-cat" id="catDesktop">
       <option value="todas">Categorías</option>
     </select>
 
-    <button class="menu-toggle" id="btnMenu">☰</button>
-
-    <div class="mobile-dropdown" id="dropdown">
-      <label>FILTRAR POR</label>
-      <select class="search-input" id="catMobile" style="background: #f9f9f9;">
+    <div class="mobile-menu-wrapper">
+      <div class="hamburger-icon">☰</div>
+      <select class="mobile-cat-native" id="catMobile">
         <option value="todas">Todas</option>
       </select>
     </div>
@@ -111,19 +115,8 @@
   const catDesktop = document.getElementById('catDesktop');
   const catMobile = document.getElementById('catMobile');
   const mainSearch = document.getElementById('mainSearch');
-  const btnMenu = document.getElementById('btnMenu');
-  const dropdown = document.getElementById('dropdown');
 
   const limpiarTexto = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-  // Control del desplegable móvil
-  btnMenu.onclick = (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle('active');
-  };
-
-  document.onclick = () => dropdown.classList.remove('active');
-  dropdown.onclick = (e) => e.stopPropagation();
 
   async function init() {
     try {
@@ -149,8 +142,9 @@
       }).join('');
 
       categories.forEach(cat => {
-        catDesktop.add(new Option(cat, limpiarTexto(cat)));
-        catMobile.add(new Option(cat, limpiarTexto(cat)));
+        const val = limpiarTexto(cat);
+        catDesktop.add(new Option(cat, val));
+        catMobile.add(new Option(cat, val));
       });
 
       status.style.display = 'none';
@@ -183,7 +177,6 @@
     const items = [...document.querySelectorAll('.card')];
     function run() {
       const q = limpiarTexto(mainSearch.value);
-      // Detecta cuál selector está visible
       const cat = window.getComputedStyle(catDesktop).display !== 'none' ? catDesktop.value : catMobile.value;
 
       items.forEach(card => {
@@ -195,7 +188,7 @@
 
     mainSearch.oninput = run;
     catDesktop.onchange = run;
-    catMobile.onchange = () => { run(); dropdown.classList.remove('active'); };
+    catMobile.onchange = run;
   }
 
   init();
