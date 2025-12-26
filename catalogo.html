@@ -101,6 +101,11 @@
   const status = document.getElementById('status');
   const categorySelect = document.getElementById('category');
 
+  // FUNCIÓN CLAVE: Elimina tildes y convierte a minúsculas
+  const limpiarTexto = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  }
+
   async function init() {
     try {
       const resp = await fetch(dataUrl);
@@ -117,7 +122,10 @@
         if(categoria) categories.add(categoria);
 
         return `
-          <div class="card" data-name="${nombre}" data-category="${categoria.toLowerCase()}">
+          <div class="card" 
+               data-name="${limpiarTexto(nombre)}" 
+               data-category="${limpiarTexto(categoria)}"
+               data-fulltext="${limpiarTexto(nombre + ' ' + descripcion)}">
             <div class="thumb"></div>
             <div class="title">${nombre}</div>
             <div class="description">${descripcion}</div>
@@ -128,7 +136,7 @@
 
       categories.forEach(cat => {
         const option = document.createElement('option');
-        option.value = cat.toLowerCase();
+        option.value = limpiarTexto(cat);
         option.textContent = cat;
         categorySelect.appendChild(option);
       });
@@ -168,11 +176,16 @@
     const items = [...document.querySelectorAll('.card')];
 
     function runFilter() {
-      const q = search.value.toLowerCase();
+      const q = limpiarTexto(search.value);
       const cat = select.value;
+
       items.forEach(card => {
-        const matchesText = card.dataset.name.toLowerCase().includes(q) || card.innerText.toLowerCase().includes(q);
-        const matchesCat = cat === 'todas' || card.dataset.category === cat;
+        const content = card.dataset.fulltext;
+        const category = card.dataset.category;
+
+        const matchesText = !q || content.includes(q);
+        const matchesCat = cat === 'todas' || category === cat;
+
         card.classList.toggle('hidden', !(matchesText && matchesCat));
       });
     }
