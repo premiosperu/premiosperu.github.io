@@ -5,103 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Catálogo A4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-
-        /* Panel de Control (No se imprime) */
-        .controls {
+        :root { --primary: #2c3e50; --accent: #3498db; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        
+        /* Panel de herramientas */
+        .toolbar {
             background: white; padding: 20px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 800px; margin: 0 auto 30px auto;
-            display: flex; gap: 15px; align-items: center;
+            max-width: 800px; margin: 0 auto 20px;
+            display: flex; gap: 20px; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Estilos del "Papel" A4 */
-        #catalog-page {
-            background: white;
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            padding: 15mm;
-            box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        /* Hoja A4 Virtual */
+        #printable-area {
+            background: white; width: 210mm; min-height: 297mm;
+            margin: 0 auto; padding: 15mm; box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
         }
 
-        .header { text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; }
-
-        /* Grid de Productos */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 30px; }
+        
+        .products-grid { 
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; 
         }
 
-        .product-card {
-            border: 1px solid #eee; padding: 15px; border-radius: 5px;
-            display: flex; flex-direction: column; gap: 5px;
+        .card { 
+            border: 1px solid #ddd; padding: 15px; border-radius: 4px;
+            page-break-inside: avoid; /* Evita que un producto se corte entre páginas */
         }
 
-        .product-name { font-weight: bold; color: var(--primary-color); font-size: 1.1em; }
-        .product-price { color: var(--accent-color); font-weight: bold; }
-        .product-desc { font-size: 0.9em; color: #666; }
+        .card h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.2rem; }
+        .price { color: var(--accent); font-weight: bold; font-size: 1.1rem; }
+        .desc { color: #555; font-size: 0.9rem; margin-top: 8px; }
 
-        /* Botones */
-        button {
-            padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px;
-            background: var(--accent-color); color: white; font-weight: bold;
+        button { 
+            padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;
+            font-weight: bold; transition: 0.3s;
         }
-        button:hover { opacity: 0.9; }
-        .btn-pdf { background: #e74c3c; }
-
-        @media print {
-            .controls { display: none; }
-            body { background: white; padding: 0; }
-            #catalog-page { box-shadow: none; margin: 0; }
-        }
+        .btn-csv { background: #eee; color: #333; }
+        .btn-pdf { background: #e74c3c; color: white; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <div>
-        <label>Subir CSV: </label>
-        <input type="file" id="csvFile" accept=".csv">
+<div class="toolbar">
+    <div style="flex-grow: 1;">
+        <label style="display:block; margin-bottom:5px; font-weight:bold;">1. Cargar CSV:</label>
+        <input type="file" id="csvFile" accept=".csv" class="btn-csv">
     </div>
-    <button onclick="exportToPDF()" class="btn-pdf">Exportar a PDF (A4)</button>
+    <button onclick="window.exportToPDF()" class="btn-pdf">2. Descargar PDF A4</button>
 </div>
 
-<div id="catalog-page">
+<div id="printable-area">
     <div class="header">
-        <h1>Catálogo de Productos</h1>
-        <p id="current-date"></p>
+        <h1 id="titulo">Catálogo de Productos</h1>
+        <p id="fecha"></p>
     </div>
-    <div id="products-container" class="products-grid">
-        <p>Carga un archivo CSV para ver los productos.</p>
+    <div id="container" class="products-grid">
+        <p style="grid-column: span 2; text-align: center; color: #999;">
+            El contenido del CSV aparecerá aquí...
+        </p>
     </div>
 </div>
 
 <script>
-    // Establecer fecha actual
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString();
+    // 1. Configuración de Fecha
+    document.getElementById('fecha').innerText = "Fecha de emisión: " + new Date().toLocaleDateString();
 
-    // Lógica para procesar el CSV
+    // 2. Procesar el CSV
     document.getElementById('csvFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
-        const reader = new FileReader();
+        if (!file) return;
 
+        const reader = new FileReader();
         reader.onload = function(event) {
-            const text = event.target.result;
-            processData(text);
+            const content = event.target.result;
+            const rows = content.split('\n').slice(1); // Omitir encabezado
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+
+            rows.forEach(row => {
+                if (row.trim()) {
+                    const columns = row.split(',');
+                    // Estructura: Nombre[0], Precio[1], Descripción[2]
+                    const card = `
+                        <div class="card">
+                            <h3>${columns[0] || 'Sin nombre'}</h3>
+                            <div class="price">$${columns[1] || '0.00'}</div>
+                            <div class="desc">${columns[2] || ''}</div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                }
+            });
         };
         reader.readAsText(file);
     });
 
-    function processData(csvText) {
-        const lines = csvText.split('\n');
-        const container = document.getElementById('products-container');
-        container.innerHTML = ''; // Limpiar contenedor
+    // 3. Función de Exportación (Asignada explícitamente a window)
+    window.exportToPDF = function() {
+        const element = document.getElementById('printable-area');
+        
+        // Verificamos si la librería cargó correctamente
+        if (typeof html2pdf === 'undefined') {
+            alert('La librería PDF aún se está cargando. Por favor, espera un segundo.');
+            return;
+        }
+
+        const opciones = {
+            margin: 0,
+            filename: 'catalogo.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, logging: false, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opciones).from(element).save();
+    };
+</script>
+
+</body>
+</html>
