@@ -3,49 +3,55 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Luxe | Catálogo Inteligente</title>
+<title>Catálogo Luxe | Buscador Fijo</title>
 <style>
-  :root { --radius: 14px; --bg: #fafafa; --max-width: 1200px; --accent: #222; }
+  :root { --radius: 14px; --bg: #fafafa; --max-width: 1200px; }
   body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; overflow-x: hidden; }
 
-  /* CABECERA FIJA Y ALINEADA */
-  header { background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; width: 100%; }
+  /* CABECERA ESTILO APP */
+  header { 
+    background: #fff; border-bottom: 1px solid #ddd; 
+    position: sticky; top: 0; z-index: 100; width: 100%; 
+  }
   .header-content {
-    max-width: var(--max-width); margin: 0 auto; padding: 12px 16px;
-    display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
-  }
-  .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; }
-
-  /* CONTROLES EN DESKTOP */
-  .header-controls { display: flex; gap: 10px; flex-grow: 1; max-width: 600px; margin-left: 40px; }
-  .header-controls input, .header-controls select {
-    padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; width: 100%;
+    max-width: var(--max-width); margin: 0 auto; padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px; box-sizing: border-box;
   }
 
-  /* ICONO HAMBURGUESA (Solo móvil) */
-  .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px; }
+  /* BUSCADOR QUE OCUPA TODO EL ESPACIO */
+  .search-wrapper { flex-grow: 1; position: relative; }
+  .search-input {
+    width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 12px;
+    font-size: 16px; outline: none; background: #f5f5f5; transition: 0.2s; box-sizing: border-box;
+  }
+  .search-input:focus { background: #fff; border-color: #222; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
 
-  /* PANEL LATERAL (MOBILE DRAWER) */
+  /* ICONO HAMBURGUESA */
+  .menu-toggle {
+    background: #222; color: #fff; border: none; border-radius: 12px;
+    width: 48px; height: 48px; font-size: 22px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  /* CATEGORÍAS EN DESKTOP (Se ocultan en móvil para ir a la hamburguesa) */
+  .desktop-select { width: 200px; display: block; }
+  @media(max-width: 768px) {
+    .desktop-select { display: none; } /* En móvil solo se ven en el menú lateral */
+  }
+
+  /* PANEL LATERAL (DRAWER) */
   .mobile-drawer {
     position: fixed; top: 0; right: -100%; width: 280px; height: 100%;
     background: #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    z-index: 200; transition: 0.3s ease; padding: 25px; box-sizing: border-box;
+    z-index: 200; transition: 0.3s ease-in-out; padding: 30px 20px; box-sizing: border-box;
   }
   .mobile-drawer.active { right: 0; }
-  .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-  .drawer-content { display: flex; flex-direction: column; gap: 20px; }
-  .drawer-content label { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #888; }
+  .drawer-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 25px; display: block; }
   .overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.5); display: none; z-index: 150; 
+    background: rgba(0,0,0,0.4); display: none; z-index: 150; backdrop-filter: blur(2px);
   }
   .overlay.active { display: block; }
-
-  /* VISTA MÓVIL */
-  @media(max-width: 768px) {
-    .header-controls { display: none; } /* Oculta buscador normal */
-    .menu-toggle { display: block; }    /* Muestra hamburguesa */
-  }
 
   /* GRILLA DE PRODUCTOS */
   .container { max-width: var(--max-width); margin: 20px auto; padding: 0 16px; box-sizing: border-box; }
@@ -72,12 +78,13 @@
 
 <header>
   <div class="header-content">
-    <div class="logo">LUXE BAGS</div>
-    
-    <div class="header-controls">
-      <input type="text" class="search-input" placeholder="Buscar carteras..." />
-      <select class="category-select"><option value="todas">Todas</option></select>
+    <div class="search-wrapper">
+      <input type="text" class="search-input" id="mainSearch" placeholder="Buscar por nombre o descripción..." />
     </div>
+    
+    <select class="search-input desktop-select" id="desktopCat">
+      <option value="todas">Categorías</option>
+    </select>
 
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
   </div>
@@ -86,22 +93,12 @@
 <div class="overlay" onclick="toggleMenu()"></div>
 
 <div class="mobile-drawer" id="menuDrawer">
-  <div class="drawer-header">
-    <span style="font-weight: bold;">FILTROS</span>
-    <button onclick="toggleMenu()" style="background:none; border:none; font-size:20px;">✕</button>
-  </div>
-  <div class="drawer-content">
-    <div>
-      <label>BUSCAR</label>
-      <input type="text" class="search-input" placeholder="Nombre o color..." style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:8px;">
-    </div>
-    <div>
-      <label>CATEGORÍA</label>
-      <select class="category-select" style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:8px;">
-        <option value="todas">Todas</option>
-      </select>
-    </div>
-  </div>
+  <span class="drawer-title">Filtros</span>
+  <label style="font-size: 12px; color: #888;">SELECCIONAR CATEGORÍA</label>
+  <select class="search-input" id="mobileCat" style="margin-top:10px; background: #fff;">
+    <option value="todas">Todas las categorías</option>
+  </select>
+  <button onclick="toggleMenu()" style="margin-top: 40px; width: 100%; padding: 12px; border: none; background: #eee; border-radius: 10px; cursor: pointer;">Cerrar</button>
 </div>
 
 <main class="container">
@@ -117,8 +114,9 @@
 
   const grid = document.getElementById('products');
   const status = document.getElementById('status');
-  const categorySelects = document.querySelectorAll('.category-select');
-  const searchInputs = document.querySelectorAll('.search-input');
+  const desktopCat = document.getElementById('desktopCat');
+  const mobileCat = document.getElementById('mobileCat');
+  const mainSearch = document.getElementById('mainSearch');
 
   const limpiarTexto = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
@@ -142,7 +140,6 @@
 
         return `
           <div class="card" 
-               data-name="${limpiarTexto(nombre)}" 
                data-category="${limpiarTexto(categoria)}"
                data-fulltext="${limpiarTexto(nombre + ' ' + descripcion)}">
             <div class="thumb"></div>
@@ -153,20 +150,17 @@
         `;
       }).join('');
 
-      // Llenar ambos selectores (Desktop y Mobile)
       categories.forEach(cat => {
-        categorySelects.forEach(select => {
-          const option = document.createElement('option');
-          option.value = limpiarTexto(cat);
-          option.textContent = cat;
-          select.appendChild(option);
-        });
+        const opt1 = new Option(cat, limpiarTexto(cat));
+        const opt2 = new Option(cat, limpiarTexto(cat));
+        desktopCat.add(opt1);
+        mobileCat.add(opt2);
       });
 
       status.style.display = 'none';
       setupLogic();
     } catch (e) {
-      status.innerHTML = "⚠️ Error al cargar el catálogo.";
+      status.innerHTML = "⚠️ Error al cargar.";
     }
   }
 
@@ -179,43 +173,3 @@
         else if (char === '"') inQuotes = false;
         else field += char;
       } else {
-        if (char === '"') inQuotes = true;
-        else if (char === ',') { row.push(field); field = ''; }
-        else if (char === '\n') { row.push(field); result.push(row); row = []; field = ''; }
-        else field += char;
-      }
-    }
-    row.push(field); result.push(row);
-    return result;
-  }
-
-  function setupLogic() {
-    const items = [...document.querySelectorAll('.card')];
-    
-    function runFilter(e) {
-      // Sincronizar inputs (si escribo en uno, se copia al otro)
-      const val = e.target.value;
-      const isSearch = e.target.classList.contains('search-input');
-      
-      if(isSearch) searchInputs.forEach(i => i.value = val);
-      else categorySelects.forEach(s => s.value = val);
-
-      const q = limpiarTexto(searchInputs[0].value);
-      const cat = categorySelects[0].value;
-
-      items.forEach(card => {
-        const matchesText = !q || card.dataset.fulltext.includes(q);
-        const matchesCat = cat === 'todas' || card.dataset.category === cat;
-        card.classList.toggle('hidden', !(matchesText && matchesCat));
-      });
-    }
-
-    searchInputs.forEach(i => i.addEventListener('input', runFilter));
-    categorySelects.forEach(s => s.addEventListener('change', runFilter));
-  }
-
-  init();
-</script>
-
-</body>
-</html>
