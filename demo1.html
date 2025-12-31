@@ -3,83 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Carteras | Store</title>
+    <title>Catálogo de Carteras</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        .header-hide { transform: translateY(-100%); transition: transform 0.3s ease; }
-        .header-show { transform: translateY(0); transition: transform 0.3s ease; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hide-header { transform: translateY(-100%); }
+        .show-header { transform: translateY(0); }
         .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
         @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-        .list-view { display: flex; flex-direction: column; gap: 1rem; }
-        .list-view .product-card { display: flex; flex-direction: row; height: 120px; }
-        .list-view .product-card img { width: 100px; height: 100%; object-fit: cover; }
+        .modal-active { overflow: hidden; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
 
     <script>
         const CONFIG = {
-            STORE_NAME: "Carteras Chic",
-            PRIMARY_COLOR: "#be185d", // Pink-700
-            SHEET_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-XXXXX/pub?output=csv",
-            CURRENCY: "S/ ",
-            WHATSAPP: "51900000000",
-            INSTAGRAM: "https://instagram.com",
-            FACEBOOK: "https://facebook.com",
-            TIKTOK: "https://tiktok.com",
-            YOUTUBE: "https://youtube.com",
-            VERSION: "1.0.4",
-            CACHE_TIME: 60 * 60 * 1000 // 1 hora
+            businessName: "Luxury Handbags",
+            mainColor: "#be185d", // Rosa/Fucsia
+            logo: "👜", // Puede ser URL
+            currency: "S/ ",
+            whatsapp: "51900000000",
+            instagram: "luxury_bags",
+            facebook: "luxury_bags_fb",
+            tiktok: "luxury_bags_tk",
+            youtube: "luxury_bags_yt",
+            version: "1.0.4",
+            sheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_8u69TExF1p_80F2m9U89jE7e7R5v_dummy/pub?output=csv",
+            cacheTime: 60 * 60 * 1000, // 1 hora
+            prefix: "LH_CART_" // Prefijo único para persistencia
         };
     </script>
 
-    <header id="main-header" class="fixed top-0 left-0 w-full bg-white z-50 shadow-sm header-show">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header id="main-header" class="fixed top-0 left-0 right-0 bg-white shadow-md z-40 transition-transform duration-300">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-                <div id="logo-placeholder" class="w-10 h-10 bg-pink-700 rounded-full flex items-center justify-center text-white">
-                    <i data-lucide="shopping-bag"></i>
-                </div>
-                <h1 class="font-bold text-lg tracking-tight" id="brand-name">Cargando...</h1>
+                <span class="text-2xl" id="header-logo"></span>
+                <h1 class="font-bold text-lg leading-tight hidden sm:block" id="header-name"></h1>
             </div>
             
-            <div class="flex items-center gap-4">
-                <button onclick="toggleCart()" class="relative p-2">
-                    <i data-lucide="shopping-cart"></i>
-                    <span id="cart-count" class="absolute top-0 right-0 bg-pink-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
-                </button>
+            <div class="flex-1 max-w-md relative">
+                <input type="text" id="search-input" placeholder="Buscar cartera..." class="w-full bg-gray-100 border-none rounded-full py-2 px-10 focus:ring-2 focus:ring-pink-500 text-sm">
+                <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
             </div>
+
+            <button onclick="toggleCart()" class="relative p-2">
+                <i data-lucide="shopping-bag"></i>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-pink-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+            </button>
         </div>
         
-        <div class="px-4 pb-3">
-            <div class="relative mb-3">
-                <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
-                <input type="text" id="search-input" placeholder="Buscar carteras..." class="w-full bg-gray-100 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-pink-700 transition">
-            </div>
-            <div id="category-list" class="flex gap-2 overflow-x-auto hide-scroll pb-1">
-                <button onclick="filterCategory('all')" class="cat-btn whitespace-nowrap px-4 py-1 rounded-full text-xs font-medium bg-pink-700 text-white">Todos</button>
-                </div>
+        <div id="category-bar" class="flex gap-4 overflow-x-auto px-4 py-2 border-t text-sm no-scrollbar whitespace-nowrap scroll-smooth bg-white">
+            <button onclick="filterCategory('all')" class="category-pill active font-semibold text-pink-600 border-b-2 border-pink-600">Todo</button>
         </div>
     </header>
 
-    <main class="pt-40 pb-20 px-4 max-w-7xl mx-auto">
+    <main class="max-w-7xl mx-auto px-4 pt-32 pb-20">
         <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-2 bg-gray-200 p-1 rounded-lg">
-                <button onclick="setView('grid')" id="btn-grid" class="p-1.5 rounded bg-white shadow-sm"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
-                <button onclick="setView('list')" id="btn-list" class="p-1.5 rounded"><i data-lucide="list" class="w-4 h-4"></i></button>
+            <h2 id="view-title" class="text-xl font-bold">Novedades</h2>
+            <div class="flex gap-2">
+                <button onclick="setSort('asc')" class="p-2 bg-white rounded shadow text-xs border">Precio ↑</button>
+                <button onclick="setSort('desc')" class="p-2 bg-white rounded shadow text-xs border">Precio ↓</button>
+                <button onclick="toggleLayout()" class="p-2 bg-white rounded shadow border">
+                    <i data-lucide="layout-grid" id="layout-icon"></i>
+                </button>
             </div>
-            <select onchange="sortProducts(this.value)" class="bg-transparent text-sm font-medium focus:outline-none">
-                <option value="default">Recomendados</option>
-                <option value="price-asc">Precio: Menor a Mayor</option>
-                <option value="price-desc">Precio: Mayor a Menor</option>
-            </select>
         </div>
 
-        <div id="products-container" class="product-grid">
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div class="skeleton h-64 rounded-xl"></div>
             <div class="skeleton h-64 rounded-xl"></div>
             <div class="skeleton h-64 rounded-xl"></div>
@@ -87,92 +79,121 @@
         </div>
     </main>
 
-    <footer class="bg-gray-100 py-10 px-4 text-center border-t border-gray-200">
-        <h2 class="font-bold text-xl mb-4" id="footer-name">Store</h2>
-        <div class="flex justify-center gap-6 mb-6">
-            <a id="link-wa" href="#" class="text-gray-600 hover:text-pink-700"><i data-lucide="phone"></i></a>
-            <a id="link-ig" href="#" class="text-gray-600 hover:text-pink-700"><i data-lucide="instagram"></i></a>
-            <a id="link-fb" href="#" class="text-gray-600 hover:text-pink-700"><i data-lucide="facebook"></i></a>
-            <a id="link-tk" href="#" class="text-gray-600 hover:text-pink-700"><i data-lucide="music-2"></i></a>
-        </div>
-        <p class="text-xs text-gray-400">© 2025 Todos los derechos reservados.</p>
-    </footer>
-
-    <div id="product-modal" class="fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 hidden transition-opacity duration-300">
-        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/80 backdrop-blur rounded-full p-2 z-10">
+    <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative">
+            <button onclick="closeModal()" class="absolute right-4 top-4 bg-white/80 rounded-full p-2 z-10 shadow">
                 <i data-lucide="x"></i>
             </button>
             <div id="modal-content"></div>
         </div>
     </div>
 
-    <div id="cart-drawer" class="fixed inset-0 bg-black/50 z-[110] translate-x-full transition-transform duration-300 flex justify-end">
-        <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center">
-                <h3 class="font-bold text-xl">Tu Carrito</h3>
-                <button onclick="toggleCart()"><i data-lucide="arrow-right"></i></button>
+    <div id="cart-drawer" class="fixed inset-0 bg-black/50 z-50 hidden">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold text-lg">Tu Carrito</h3>
+                <button onclick="toggleCart()"><i data-lucide="x"></i></button>
             </div>
-            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
-                </div>
-            <div class="p-6 border-t border-gray-100 bg-gray-50">
-                <div class="flex justify-between text-lg font-bold mb-4">
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+            <div class="p-4 border-t space-y-4">
+                <div class="flex justify-between font-bold text-xl">
                     <span>Total:</span>
-                    <span id="cart-total">S/ 0.00</span>
+                    <span id="cart-total">0.00</span>
                 </div>
-                <button onclick="sendOrder()" class="w-full bg-pink-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-pink-800 transition">
-                    <i data-lucide="message-circle"></i> Enviar pedido por WhatsApp
+                <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle"></i> Enviar Pedido por WhatsApp
                 </button>
             </div>
         </div>
     </div>
 
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+            <div>
+                <h4 class="font-bold text-xl mb-4" id="footer-name"></h4>
+                <p class="text-gray-400 text-sm">Las mejores carteras con estilo moderno y calidad premium.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">Redes Sociales</h4>
+                <div class="flex justify-center md:justify-start gap-4">
+                    <a href="#" id="link-ig" class="p-2 bg-gray-800 rounded-full"><i data-lucide="instagram"></i></a>
+                    <a href="#" id="link-tk" class="p-2 bg-gray-800 rounded-full"><i data-lucide="music-2"></i></a>
+                    <a href="#" id="link-fb" class="p-2 bg-gray-800 rounded-full"><i data-lucide="facebook"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">Contacto</h4>
+                <a href="#" id="link-wa" class="inline-flex items-center gap-2 text-green-400 font-bold">
+                    <i data-lucide="phone"></i> WhatsApp Directo
+                </a>
+            </div>
+        </div>
+        <div class="text-center mt-12 pt-8 border-t border-gray-800 text-xs text-gray-500">
+            &copy; 2024 <span id="footer-copy"></span>. Versión <span id="v-tag"></span>
+        </div>
+    </footer>
+
     <script>
-        // --- LOGICA DE DATOS Y CACHE ---
         let allProducts = [];
+        let cart = JSON.parse(localStorage.getItem(CONFIG.prefix + 'data')) || [];
         let currentFilter = 'all';
-        let currentView = 'grid';
-        let cart = JSON.parse(localStorage.getItem(`cart_${location.pathname}`)) || [];
+        let currentSort = 'none';
+        let isGridView = true;
+        let lastScrollY = window.scrollY;
 
-        async function init() {
-            lucide.createIcons();
-            setupUI();
-            await loadData();
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            initUI();
+            fetchData();
             updateCartUI();
-            setupHeaderScroll();
-            setupSearch();
+            lucide.createIcons();
+        });
+
+        function initUI() {
+            document.getElementById('header-logo').innerText = CONFIG.logo;
+            document.getElementById('header-name').innerText = CONFIG.businessName;
+            document.getElementById('footer-name').innerText = CONFIG.businessName;
+            document.getElementById('footer-copy').innerText = CONFIG.businessName;
+            document.getElementById('v-tag').innerText = CONFIG.version;
+            document.getElementById('link-wa').href = `https://wa.me/${CONFIG.whatsapp}`;
+            document.getElementById('link-ig').href = `https://instagram.com/${CONFIG.instagram}`;
+            document.getElementById('link-fb').href = `https://facebook.com/${CONFIG.facebook}`;
+            document.getElementById('link-tk').href = `https://tiktok.com/@${CONFIG.tiktok}`;
         }
 
-        function setupUI() {
-            document.getElementById('brand-name').innerText = CONFIG.STORE_NAME;
-            document.getElementById('footer-name').innerText = CONFIG.STORE_NAME;
-            document.getElementById('link-wa').href = `https://wa.me/${CONFIG.WHATSAPP}`;
-            document.getElementById('link-ig').href = CONFIG.INSTAGRAM;
-            document.getElementById('link-fb').href = CONFIG.FACEBOOK;
-            document.getElementById('link-tk').href = CONFIG.TIKTOK;
-        }
-
-        async function loadData() {
-            const cacheKey = `data_cache_${location.pathname}`;
-            const cached = JSON.parse(localStorage.getItem(cacheKey));
-            const now = Date.now();
-
-            if (cached && (now - cached.time < CONFIG.CACHE_TIME)) {
-                allProducts = cached.data;
-                renderProducts(allProducts);
-                renderCategories();
+        // Header Scroll Effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                header.classList.add('hide-header');
             } else {
-                try {
-                    const response = await fetch(CONFIG.SHEET_URL);
-                    const csvText = await response.text();
-                    allProducts = parseCSV(csvText);
-                    localStorage.setItem(cacheKey, JSON.stringify({time: now, data: allProducts}));
-                    renderProducts(allProducts);
-                    renderCategories();
-                } catch (e) {
-                    console.error("Error cargando datos reales, usando inventados.");
-                    loadMockData();
-                }
+                header.classList.remove('hide-header');
+            }
+            lastScrollY = window.scrollY;
+        });
+
+        // Obtención de datos
+        async function fetchData() {
+            const cacheKey = CONFIG.prefix + 'cache';
+            const cached = JSON.parse(localStorage.getItem(cacheKey));
+            const now = new Date().getTime();
+
+            if (cached && (now - cached.time < CONFIG.cacheTime)) {
+                renderAll(cached.data);
+                return;
+            }
+
+            try {
+                const response = await fetch(CONFIG.sheetUrl);
+                const csvText = await response.text();
+                const data = parseCSV(csvText);
+                
+                localStorage.setItem(cacheKey, JSON.stringify({ time: now, data }));
+                renderAll(data);
+            } catch (error) {
+                console.error("Error cargando datos, usando ejemplo:", error);
+                const fallback = getSampleData();
+                renderAll(fallback);
             }
         }
 
@@ -180,251 +201,214 @@
             const lines = csv.split('\n');
             const result = [];
             const headers = lines[0].split(',');
+
             for (let i = 1; i < lines.length; i++) {
+                if (!lines[i]) continue;
                 const obj = {};
-                const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Regex para comas en CSV
-                if (currentline.length < 2) continue;
-                obj.name = currentline[0]?.replace(/"/g, '');
+                const currentline = lines[i].split(',');
+                obj.name = currentline[0];
                 obj.price = parseFloat(currentline[1]);
-                obj.salePrice = parseFloat(currentline[2]) || null;
-                obj.category = currentline[3]?.trim();
-                obj.description = currentline[4]?.replace(/"/g, '');
-                obj.image = currentline[5]?.trim();
+                obj.salePrice = parseFloat(currentline[2]);
+                obj.category = currentline[3];
+                obj.description = currentline[4];
+                obj.image = currentline[5] && currentline[5].includes('http') ? currentline[5].trim() : `https://via.placeholder.com/400x500/${(Math.random()*0xFFFFFF<<0).toString(16)}/ffffff?text=${encodeURIComponent(obj.name)}`;
                 obj.id = btoa(obj.name).substring(0, 8);
                 result.push(obj);
             }
             return result;
         }
 
-        function loadMockData() {
-            allProducts = [
-                { id: '1', name: 'Cartera Elegance Negra', price: 150, salePrice: 120, category: 'Gala', description: 'Cartera de cuero genuino perfecta para eventos nocturnos.', image: '' },
-                { id: '2', name: 'Bolso Daily Beige', price: 89, salePrice: null, category: 'Casual', description: 'Espacioso y ligero para el día a día.', image: '' },
-                { id: '3', name: 'Mini Bag Red', price: 110, salePrice: 95, category: 'Mini', description: 'Color vibrante con cadena dorada.', image: '' }
+        function getSampleData() {
+            return [
+                { id: '1', name: "Cartera Elegance Gold", price: 150, salePrice: 120, category: "Gala", description: "Ideal para eventos nocturnos.", image: "https://via.placeholder.com/400x500/be185d/ffffff?text=Cartera+1" },
+                { id: '2', name: "Bolso Urban Daily", price: 90, salePrice: 0, category: "Casual", description: "Resistente y espacioso.", image: "https://via.placeholder.com/400x500/333333/ffffff?text=Cartera+2" },
+                { id: '3', name: "Mini Bag Pink", price: 60, salePrice: 45, category: "Mini", description: "Tendencia 2024.", image: "https://via.placeholder.com/400x500/ff99cc/ffffff?text=Cartera+3" }
             ];
-            renderProducts(allProducts);
-            renderCategories();
         }
 
-        // --- RENDERIZADO ---
-        function renderProducts(products) {
-            const container = document.getElementById('products-container');
-            container.innerHTML = '';
-            
-            products.forEach(p => {
-                const card = document.createElement('div');
-                card.className = `product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-all active:scale-95 cursor-pointer`;
-                
-                const discountTag = p.salePrice ? `<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">OFERTA</span>` : '';
-                
-                const imgStyle = p.image ? `src="${p.image}"` : `style="background: hsl(${Math.random() * 360}, 70%, 80%)"`;
-
-                card.innerHTML = `
-                    <div class="relative aspect-square overflow-hidden bg-gray-100" onclick="openProduct('${p.id}')">
-                        ${discountTag}
-                        <img ${imgStyle} loading="lazy" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
-                    </div>
-                    <div class="p-3 flex flex-col justify-between flex-1">
-                        <div>
-                            <p class="text-[10px] uppercase text-gray-400 font-bold mb-1">${p.category}</p>
-                            <h3 class="text-sm font-semibold line-clamp-2 leading-tight">${p.name}</h3>
-                        </div>
-                        <div class="mt-2">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-pink-700">${CONFIG.CURRENCY}${p.salePrice || p.price}</span>
-                                ${p.salePrice ? `<span class="text-xs text-gray-400 line-through">${CONFIG.CURRENCY}${p.price}</span>` : ''}
-                            </div>
-                            <button onclick="addToCart(event, '${p.id}')" class="mt-2 w-full bg-gray-900 text-white text-xs py-2 rounded-lg font-medium flex items-center justify-center gap-1">
-                                <i data-lucide="plus" class="w-3 h-3"></i> Agregar
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            lucide.createIcons();
+        // Renderizado
+        function renderAll(data) {
+            allProducts = data;
+            renderCategories();
+            renderProducts();
         }
 
         function renderCategories() {
-            const cats = ['all', ...new Set(allProducts.map(p => p.category))];
-            const container = document.getElementById('category-list');
-            container.innerHTML = cats.map(c => `
-                <button onclick="filterCategory('${c}')" class="cat-btn whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition
-                    ${currentFilter === c ? 'bg-pink-700 text-white' : 'bg-gray-200 text-gray-600'}">
-                    ${c === 'all' ? 'Todos' : c}
+            const categories = ['all', ...new Set(allProducts.map(p => p.category))];
+            const container = document.getElementById('category-bar');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="category-pill px-4 py-1 rounded-full border transition ${currentFilter === cat ? 'bg-pink-600 text-white border-pink-600' : 'bg-white'}">
+                    ${cat === 'all' ? 'Todo' : cat}
                 </button>
             `).join('');
         }
 
-        // --- FILTROS Y BÚSQUEDA ---
-        function setupSearch() {
-            document.getElementById('search-input').addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const filtered = allProducts.filter(p => {
-                    const matchName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(term);
-                    const matchDesc = p.description.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(term);
-                    const matchCat = currentFilter === 'all' || p.category === currentFilter;
-                    return (matchName || matchDesc) && matchCat;
-                });
-                renderProducts(filtered);
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            let filtered = allProducts.filter(p => {
+                const search = document.getElementById('search-input').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const name = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const desc = p.description.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const matchesSearch = name.includes(search) || desc.includes(search);
+                const matchesCat = currentFilter === 'all' || p.category === currentFilter;
+                return matchesSearch && matchesCat;
             });
+
+            if (currentSort === 'asc') filtered.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+            if (currentSort === 'desc') filtered.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
+
+            grid.className = isGridView ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "flex flex-col gap-4";
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden group hover:shadow-md transition cursor-pointer" onclick="showProduct('${p.id}')">
+                    <div class="aspect-[4/5] relative overflow-hidden bg-gray-100">
+                        <img src="${p.image}" alt="${p.name}" loading="lazy" class="object-cover w-full h-full transition duration-500 group-hover:scale-105">
+                        ${p.salePrice > 0 ? `<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">OFERTA</span>` : ''}
+                    </div>
+                    <div class="p-3">
+                        <p class="text-[10px] text-pink-600 font-bold uppercase">${p.category}</p>
+                        <h3 class="font-semibold text-sm line-clamp-1">${p.name}</h3>
+                        <div class="mt-1">
+                            ${p.salePrice > 0 
+                                ? `<span class="text-pink-600 font-bold">${CONFIG.currency}${p.salePrice}</span> <span class="text-xs text-gray-400 line-through">${CONFIG.currency}${p.price}</span>` 
+                                : `<span class="font-bold">${CONFIG.currency}${p.price}</span>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
+        // Acciones
         function filterCategory(cat) {
             currentFilter = cat;
             renderCategories();
-            const filtered = cat === 'all' ? allProducts : allProducts.filter(p => p.category === cat);
-            renderProducts(filtered);
+            renderProducts();
         }
 
-        function setView(view) {
-            currentView = view;
-            const container = document.getElementById('products-container');
-            document.getElementById('btn-grid').classList.toggle('bg-white', view === 'grid');
-            document.getElementById('btn-list').classList.toggle('bg-white', view === 'list');
-            container.className = view === 'grid' ? 'product-grid' : 'list-view';
+        function setSort(type) {
+            currentSort = type;
+            renderProducts();
         }
 
-        // --- CARRITO ---
-        function toggleCart() {
-            const drawer = document.getElementById('cart-drawer');
-            drawer.classList.toggle('translate-x-full');
-        }
-
-        function addToCart(e, id) {
-            e.stopPropagation();
-            const product = allProducts.find(p => p.id === id);
-            const existing = cart.find(item => item.id === id);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({...product, qty: 1});
-            }
-            updateCartUI();
-            // Feedback visual simple
-            const btn = e.currentTarget;
-            const original = btn.innerHTML;
-            btn.innerHTML = "¡Añadido!";
-            btn.classList.replace('bg-gray-900', 'bg-green-600');
-            setTimeout(() => {
-                btn.innerHTML = original;
-                btn.classList.replace('bg-green-600', 'bg-gray-900');
-                lucide.createIcons();
-            }, 1000);
-        }
-
-        function updateCartUI() {
-            localStorage.setItem(`cart_${location.pathname}`, JSON.stringify(cart));
-            const count = cart.reduce((acc, item) => acc + item.qty, 0);
-            const badge = document.getElementById('cart-count');
-            badge.innerText = count;
-            badge.classList.toggle('hidden', count === 0);
-
-            const container = document.getElementById('cart-items');
-            if (cart.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-gray-400"><i data-lucide="shopping-bag" class="mx-auto mb-2 opacity-20 w-12 h-12"></i><p>Tu carrito está vacío</p></div>`;
-            } else {
-                container.innerHTML = cart.map(item => `
-                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            <img src="${item.image}" class="w-full h-full object-cover" onerror="this.style.background='pink'">
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-bold">${item.name}</h4>
-                            <p class="text-xs text-pink-700 font-bold">${CONFIG.CURRENCY}${item.salePrice || item.price}</p>
-                            <div class="flex items-center gap-3 mt-2">
-                                <button onclick="changeQty('${item.id}', -1)" class="w-6 h-6 border rounded flex items-center justify-center">-</button>
-                                <span class="text-sm">${item.qty}</span>
-                                <button onclick="changeQty('${item.id}', 1)" class="w-6 h-6 border rounded flex items-center justify-center">+</button>
-                            </div>
-                        </div>
-                        <button onclick="removeFromCart('${item.id}')" class="text-gray-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>
-                `).join('');
-            }
-
-            const total = cart.reduce((acc, item) => acc + ((item.salePrice || item.price) * item.qty), 0);
-            document.getElementById('cart-total').innerText = `${CONFIG.CURRENCY}${total.toFixed(2)}`;
+        function toggleLayout() {
+            isGridView = !isGridView;
+            document.getElementById('layout-icon').setAttribute('data-lucide', isGridView ? 'layout-list' : 'layout-grid');
             lucide.createIcons();
+            renderProducts();
         }
 
-        function changeQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.qty += delta;
-                if (item.qty <= 0) return removeFromCart(id);
-                updateCartUI();
-            }
-        }
+        document.getElementById('search-input').addEventListener('input', renderProducts);
 
-        function removeFromCart(id) {
-            cart = cart.filter(i => i.id !== id);
-            updateCartUI();
-        }
-
-        function sendOrder() {
-            if (cart.length === 0) return;
-            let text = `*Pedido de ${CONFIG.STORE_NAME}*\n--------------------------\n`;
-            cart.forEach(item => {
-                text += `• ${item.qty}x ${item.name} (${CONFIG.CURRENCY}${item.salePrice || item.price})\n`;
-            });
-            const total = document.getElementById('cart-total').innerText;
-            text += `--------------------------\n*Total: ${total}*`;
-            const url = `https://wa.me/${CONFIG.WHATSAPP}?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
-
-        // --- MODAL ---
-        function openProduct(id) {
+        // Modal
+        function showProduct(id) {
             const p = allProducts.find(x => x.id === id);
+            const modal = document.getElementById('product-modal');
             const content = document.getElementById('modal-content');
+
             content.innerHTML = `
-                <div class="aspect-square bg-gray-100">
-                    <img src="${p.image}" class="w-full h-full object-cover" onerror="this.style.background='pink'">
-                </div>
+                <img src="${p.image}" class="w-full aspect-square object-cover">
                 <div class="p-6">
-                    <span class="text-xs font-bold text-pink-700 uppercase tracking-widest">${p.category}</span>
-                    <h2 class="text-2xl font-bold mt-1">${p.name}</h2>
-                    <div class="flex items-center gap-3 my-4">
-                        <span class="text-2xl font-bold text-gray-900">${CONFIG.CURRENCY}${p.salePrice || p.price}</span>
-                        ${p.salePrice ? `<span class="text-lg text-gray-400 line-through">${CONFIG.CURRENCY}${p.price}</span>` : ''}
+                    <span class="text-pink-600 font-bold text-sm">${p.category}</span>
+                    <h2 class="text-2xl font-bold mb-2">${p.name}</h2>
+                    <p class="text-gray-600 mb-6">${p.description}</p>
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="text-2xl font-bold">
+                            ${p.salePrice > 0 ? CONFIG.currency + p.salePrice : CONFIG.currency + p.price}
+                        </div>
+                        <button onclick="addToCart('${p.id}')" class="flex-1 bg-pink-700 text-white py-3 rounded-xl font-bold hover:bg-pink-800 transition">
+                            Añadir al Carrito
+                        </button>
                     </div>
-                    <p class="text-gray-600 leading-relaxed mb-6">${p.description}</p>
-                    <button onclick="addToCart(event, '${p.id}'); closeModal();" class="w-full bg-pink-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-pink-200">
-                        Añadir al carrito
-                    </button>
                 </div>
             `;
-            document.getElementById('product-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-active');
             lucide.createIcons();
         }
 
         function closeModal() {
             document.getElementById('product-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
         }
 
-        // --- COMPORTAMIENTO HEADER ---
-        function setupHeaderScroll() {
-            let lastScroll = 0;
-            const header = document.getElementById('main-header');
-            window.addEventListener('scroll', () => {
-                const currentScroll = window.pageYOffset;
-                if (currentScroll <= 0) {
-                    header.classList.remove('header-hide');
-                    return;
-                }
-                if (currentScroll > lastScroll && !header.classList.contains('header-hide')) {
-                    header.classList.add('header-hide');
-                } else if (currentScroll < lastScroll && header.classList.contains('header-hide')) {
-                    header.classList.remove('header-hide');
-                }
-                lastScroll = currentScroll;
+        // Carrito
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        function addToCart(id) {
+            const p = allProducts.find(x => x.id === id);
+            const item = cart.find(x => x.id === id);
+            if (item) {
+                item.qty++;
+            } else {
+                cart.push({ ...p, qty: 1 });
+            }
+            updateCartUI();
+            closeModal();
+            if(document.getElementById('cart-drawer').classList.contains('hidden')) toggleCart();
+        }
+
+        function updateQty(id, delta) {
+            const item = cart.find(x => x.id === id);
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            localStorage.setItem(CONFIG.prefix + 'data', JSON.stringify(cart));
+            const container = document.getElementById('cart-items');
+            const count = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+            
+            let total = 0;
+            let totalItems = 0;
+
+            container.innerHTML = cart.map(item => {
+                const price = item.salePrice > 0 ? item.salePrice : item.price;
+                total += price * item.qty;
+                totalItems += item.qty;
+                return `
+                    <div class="flex gap-4 items-center border-b pb-4">
+                        <img src="${item.image}" class="w-16 h-16 rounded object-cover">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm">${item.name}</h4>
+                            <p class="text-xs text-gray-500">${CONFIG.currency}${price}</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-2">
+                            <button onclick="updateQty('${item.id}', -1)" class="p-1 text-pink-600 font-bold">-</button>
+                            <span class="text-sm w-4 text-center">${item.qty}</span>
+                            <button onclick="updateQty('${item.id}', 1)" class="p-1 text-pink-600 font-bold">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if(cart.length === 0) container.innerHTML = `<p class="text-center text-gray-400 mt-10">Tu carrito está vacío</p>`;
+
+            count.innerText = totalItems;
+            totalEl.innerText = CONFIG.currency + total.toFixed(2);
+            lucide.createIcons();
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) return;
+            let total = 0;
+            let text = `*Pedido de ${CONFIG.businessName}*\n--------------------------\n`;
+            cart.forEach(item => {
+                const price = item.salePrice > 0 ? item.salePrice : item.price;
+                const sub = price * item.qty;
+                total += sub;
+                text += `• ${item.qty}x ${item.name} (${CONFIG.currency}${price})\n`;
             });
+            text += `--------------------------\n*Total: ${CONFIG.currency}${total.toFixed(2)}*`;
+            
+            const wpUrl = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
+            window.open(wpUrl, '_blank');
         }
-
-        window.onload = init;
     </script>
 </body>
 </html>
