@@ -762,19 +762,25 @@
         }
 
         function parseCSV(csv) {
+            if (!csv || !csv.trim()) return [];
+
             const rows = [];
+            let i = 0;
+            const delimiter = (csv.includes(';') && (csv.indexOf(';') < csv.indexOf(',') || !csv.includes(','))) ? ';' : ',';
+
             let currentRow = [];
             let currentField = '';
             let inQuotes = false;
 
-            for (let i = 0; i < csv.length; i++) {
+            while (i < csv.length) {
                 const char = csv[i];
                 const nextChar = csv[i + 1];
 
                 if (inQuotes) {
                     if (char === '"' && nextChar === '"') {
                         currentField += '"';
-                        i++;
+                        i += 2;
+                        continue;
                     } else if (char === '"') {
                         inQuotes = false;
                     } else {
@@ -783,12 +789,13 @@
                 } else {
                     if (char === '"') {
                         inQuotes = true;
-                    } else if (char === ',') {
+                    } else if (char === delimiter) {
                         currentRow.push(currentField.trim());
                         currentField = '';
                     } else if (char === '\n' || char === '\r') {
+                        currentField = currentField.trim();
                         if (currentField || currentRow.length > 0) {
-                            currentRow.push(currentField.trim());
+                            currentRow.push(currentField);
                             rows.push(currentRow);
                         }
                         currentRow = [];
@@ -798,7 +805,9 @@
                         currentField += char;
                     }
                 }
+                i++;
             }
+
             if (currentField || currentRow.length > 0) {
                 currentRow.push(currentField.trim());
                 rows.push(currentRow);
@@ -808,12 +817,12 @@
 
             const headers = rows[0].map(h => h.trim().toLowerCase());
             const mapper = {
-                'nombre': 'name',
-                'precio regular': 'price',
-                'precio rebajado': 'sale_price',
-                'categoría': 'category',
-                'descripcion': 'desc',
-                'imagen': 'image'
+                'nombre': 'name', 'name': 'name',
+                'precio regular': 'price', 'price': 'price', 'regular price': 'price',
+                'precio rebajado': 'sale_price', 'sale_price': 'sale_price', 'sale price': 'sale_price',
+                'categoría': 'category', 'category': 'category',
+                'descripcion': 'desc', 'desc': 'desc', 'description': 'desc',
+                'imagen': 'image', 'image': 'image'
             };
 
             return rows.slice(1).map(row => {
@@ -822,16 +831,22 @@
                     const canonical = mapper[header] || header;
                     let val = row[index] || '';
                     if (canonical === 'price' || canonical === 'sale_price') {
-                        val = parseFloat(val.toString().replace(/[^0-9.-]+/g, "")) || 0;
+                        val = val.toString().replace(',', '.').replace(/[^0-9.-]+/g, "");
+                        val = parseFloat(val) || 0;
                     }
                     obj[canonical] = val;
                 });
                 return obj;
-            }).filter(p => p.name);
+            }).filter(p => p.name && p.name.length > 2);
+        }
+
+        function formatPrice(val) {
+            const num = parseFloat(val) || 0;
+            return num.toFixed(2);
         }
 
         function renderCategories() {
-            const categories = ['Todas', ...new Set(products.map(p => p.category))];
+            const categories = ['Todas', ...new Set(products.map(p => p.category).filter(c => c && c.trim()))];
             categoryNav.innerHTML = categories.map(cat => `
                 <button class="category-btn ${cat === currentFilter ? 'active' : ''}" onclick="setCategory('${cat}')">
                     ${cat}
@@ -883,21 +898,26 @@
                 return;
             }
 
-            productGrid.innerHTML = items.map((p, idx) => `
+            productGrid.innerHTML = items.map((p, idx) => {
+                const finalPrice = p.sale_price > 0 ? p.sale_price : p.price;
+                const hasSale = p.sale_price > 0 && p.sale_price < p.price;
+
+                return `
                 <div class="product-card" onclick="openProductModal(${idx})">
                     <div class="product-image-wrapper">
                         <img src="${p.image}" alt="${p.name}" class="product-image" loading="lazy">
                     </div>
                     <div class="product-info">
-                        <span class="product-category">${p.category}</span>
+                        <span class="product-category">${p.category || 'General'}</span>
                         <h3 class="product-name">${p.name}</h3>
                         <div class="product-price-row">
-                            <span class="price-sale">${CONFIG.currency}${p.sale_price || p.price}</span>
-                            ${p.sale_price && p.sale_price < p.price ? `<span class="price-regular">${CONFIG.currency}${p.price}</span>` : ''}
+                            <span class="price-sale">${CONFIG.currency}${formatPrice(finalPrice)}</span>
+                            ${hasSale ? `<span class="price-regular">${CONFIG.currency}${formatPrice(p.price)}</span>` : ''}
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // --- Search Events ---
@@ -927,6 +947,9 @@
         function openProductModal(index) {
             const p = products[index];
             const modal = document.getElementById('product-modal');
+            const finalPrice = p.sale_price > 0 ? p.sale_price : p.price;
+            const hasSale = p.sale_price > 0 && p.sale_price < p.price;
+
             modal.innerHTML = `
                 <div style="position: relative;">
                     <button class="action-btn" onclick="closeModals()" style="position: absolute; right: 1rem; top: 1rem; z-index: 10; background: var(--surface-color); border-radius: 50%;">
@@ -937,12 +960,12 @@
                             <img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div style="padding: 2rem; display: flex; flex-direction: column; gap: 1rem;">
-                            <span class="product-category">${p.category}</span>
+                            <span class="product-category">${p.category || 'General'}</span>
                             <h2 style="font-size: 2rem;">${p.name}</h2>
-                            <p style="color: var(--text-secondary); line-height: 1.6;">${p.desc || 'Sin descripción disponible.'}</p>
+                            <p style="color: var(--text-secondary); line-height: 1.6; white-space: pre-line;">${p.desc || 'Sin descripción disponible.'}</p>
                             <div class="product-price-row" style="margin: 1rem 0;">
-                                <span class="price-sale" style="font-size: 2rem;">${CONFIG.currency}${p.sale_price || p.price}</span>
-                                ${p.sale_price && p.sale_price < p.price ? `<span class="price-regular" style="font-size: 1.2rem;">${CONFIG.currency}${p.price}</span>` : ''}
+                                <span class="price-sale" style="font-size: 2rem;">${CONFIG.currency}${formatPrice(finalPrice)}</span>
+                                ${hasSale ? `<span class="price-regular" style="font-size: 1.2rem;">${CONFIG.currency}${formatPrice(p.price)}</span>` : ''}
                             </div>
                             <button class="checkout-btn" onclick="addToCart('${encodeURIComponent(JSON.stringify(p))}')">
                                 <i data-lucide="shopping-cart"></i>
@@ -996,12 +1019,14 @@
                 return;
             }
 
-            cartItemsContainer.innerHTML = cart.map((item, idx) => `
+            cartItemsContainer.innerHTML = cart.map((item, idx) => {
+                const itemPrice = item.sale_price > 0 ? item.sale_price : item.price;
+                return `
                 <div style="display: flex; gap: 1rem; align-items: center; background: var(--surface-color); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
                     <img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius-sm);">
                     <div style="flex-grow: 1;">
                         <h4 style="font-size: 0.9rem; margin-bottom: 0.25rem;">${item.name}</h4>
-                        <p style="font-weight: 700; color: var(--primary-color);">${CONFIG.currency}${(item.sale_price || item.price)}</p>
+                        <p style="font-weight: 700; color: var(--primary-color);">${CONFIG.currency}${formatPrice(itemPrice)}</p>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button onclick="updateQty(${idx}, -1)" class="action-btn" style="padding: 0.25rem;"><i data-lucide="minus-circle" style="width: 18px;"></i></button>
@@ -1009,9 +1034,13 @@
                         <button onclick="updateQty(${idx}, 1)" class="action-btn" style="padding: 0.25rem;"><i data-lucide="plus-circle" style="width: 18px;"></i></button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
-            const total = cart.reduce((sum, item) => sum + ((item.sale_price || item.price) * item.qty), 0);
+            const total = cart.reduce((sum, item) => {
+                const price = item.sale_price > 0 ? item.sale_price : item.price;
+                return sum + (price * item.qty);
+            }, 0);
             cartTotalValue.textContent = `${CONFIG.currency}${total.toFixed(2)}`;
             lucide.createIcons();
         }
@@ -1048,10 +1077,14 @@
 
             let message = `*Hola, me gustaría realizar un pedido de ${CONFIG.bizName}*\n\n`;
             cart.forEach(item => {
-                message += `- ${item.name} (x${item.qty}) : ${CONFIG.currency}${((item.sale_price || item.price) * item.qty).toFixed(2)}\n`;
+                const price = item.sale_price > 0 ? item.sale_price : item.price;
+                message += `- ${item.name} (x${item.qty}) : ${CONFIG.currency}${formatPrice(price * item.qty)}\n`;
             });
-            const total = cart.reduce((sum, item) => sum + ((item.sale_price || item.price) * item.qty), 0);
-            message += `\n*TOTAL: ${CONFIG.currency}${total.toFixed(2)}*`;
+            const total = cart.reduce((sum, item) => {
+                const price = item.sale_price > 0 ? item.sale_price : item.price;
+                return sum + (price * item.qty);
+            }, 0);
+            message += `\n*TOTAL: ${CONFIG.currency}${formatPrice(total)}*`;
 
             const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
