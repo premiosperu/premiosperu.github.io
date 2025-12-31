@@ -762,12 +762,51 @@
         }
 
         function parseCSV(csv) {
-            const lines = csv.split('\n');
-            const result = [];
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const rows = [];
+            let currentRow = [];
+            let currentField = '';
+            let inQuotes = false;
 
-            // Support name, price, sale_price, category, desc, image
-            // Map common Spanish names to canonical ones
+            for (let i = 0; i < csv.length; i++) {
+                const char = csv[i];
+                const nextChar = csv[i + 1];
+
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') {
+                        currentField += '"';
+                        i++;
+                    } else if (char === '"') {
+                        inQuotes = false;
+                    } else {
+                        currentField += char;
+                    }
+                } else {
+                    if (char === '"') {
+                        inQuotes = true;
+                    } else if (char === ',') {
+                        currentRow.push(currentField.trim());
+                        currentField = '';
+                    } else if (char === '\n' || char === '\r') {
+                        if (currentField || currentRow.length > 0) {
+                            currentRow.push(currentField.trim());
+                            rows.push(currentRow);
+                        }
+                        currentRow = [];
+                        currentField = '';
+                        if (char === '\r' && nextChar === '\n') i++;
+                    } else {
+                        currentField += char;
+                    }
+                }
+            }
+            if (currentField || currentRow.length > 0) {
+                currentRow.push(currentField.trim());
+                rows.push(currentRow);
+            }
+
+            if (rows.length === 0) return [];
+
+            const headers = rows[0].map(h => h.trim().toLowerCase());
             const mapper = {
                 'nombre': 'name',
                 'precio regular': 'price',
@@ -777,25 +816,18 @@
                 'imagen': 'image'
             };
 
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i]) continue;
+            return rows.slice(1).map(row => {
                 const obj = {};
-                // Simple CSV parser (handle quotes if needed, but keeping it fast for now)
-                const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
                 headers.forEach((header, index) => {
                     const canonical = mapper[header] || header;
-                    let val = (currentline[index] || '').replace(/^"|"$/g, '').trim();
-
+                    let val = row[index] || '';
                     if (canonical === 'price' || canonical === 'sale_price') {
-                        val = parseFloat(val.replace(/[^0-9.-]+/g, "")) || 0;
+                        val = parseFloat(val.toString().replace(/[^0-9.-]+/g, "")) || 0;
                     }
                     obj[canonical] = val;
                 });
-
-                if (obj.name) result.push(obj);
-            }
-            return result;
+                return obj;
+            }).filter(p => p.name);
         }
 
         function renderCategories() {
