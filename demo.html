@@ -785,7 +785,7 @@
 
                 headers.forEach((header, index) => {
                     const canonical = mapper[header] || header;
-                    let val = currentline[index]?.replace(/^"|"$/g, '').trim();
+                    let val = (currentline[index] || '').replace(/^"|"$/g, '').trim();
 
                     if (canonical === 'price' || canonical === 'sale_price') {
                         val = parseFloat(val.replace(/[^0-9.-]+/g, "")) || 0;
