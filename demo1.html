@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Carteras | Tienda Online</title>
+    <title>Catálogo Moderno | SPA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,59 +11,57 @@
         [x-cloak] { display: none !important; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .header-hide { transform: translateY(-100%); transition: transform 0.3s ease; }
-        .header-show { transform: translateY(0); transition: transform 0.3s ease; }
-        .modal-bottom { transform: translateY(100%); transition: transform 0.3s ease-out; }
-        .modal-bottom.active { transform: translateY(0); }
+        .header-anim { transition: transform 0.3s ease-in-out; }
+        .header-hide { transform: translateY(-100%); }
+        .header-show { transform: translateY(0); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans" 
+<body class="bg-gray-50 text-gray-900 font-sans" 
       x-data="shopApp()" 
       x-init="init()"
       @scroll.window="handleScroll">
 
     <header :class="headerVisible ? 'header-show' : 'header-hide'" 
-            class="fixed top-0 w-full z-50 bg-white shadow-md transition-all">
+            class="fixed top-0 w-full z-50 bg-white shadow-sm header-anim">
         <div class="container mx-auto px-4 py-2">
-            <div class="flex flex-wrap items-center justify-between gap-2 lg:flex-nowrap">
+            <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-2 shrink-0">
-                    <img :src="config.logo" :alt="config.name" class="h-10 w-auto">
-                    <h1 class="font-bold text-xl hidden sm:block" x-text="config.name"></h1>
+                    <img :src="config.logo" class="h-10 w-10 object-contain">
+                    <span class="font-bold text-lg hidden sm:block" x-text="config.name"></span>
                 </div>
 
-                <div class="relative flex-grow max-w-xl order-3 lg:order-2 w-full lg:w-auto">
-                    <input type="text" x-model="searchQuery" placeholder="Buscar carteras..." 
-                           class="w-full pl-10 pr-4 py-2 border rounded-full focus:ring-2 focus:outline-none"
-                           :style="`focus:ring-color: ${config.primaryColor}`">
-                    <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-5 h-5"></i>
+                <div class="relative flex-grow max-w-md">
+                    <input type="text" x-model="searchQuery" placeholder="Buscar..." 
+                           class="w-full bg-gray-100 border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-opacity-50"
+                           :style="`--tw-ring-color: ${config.primaryColor}`">
+                    <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
                 </div>
 
-                <div class="flex items-center gap-4 order-2 lg:order-3">
-                    <button @click="cartOpen = true" class="relative p-2">
-                        <i data-lucide="shopping-bag"></i>
-                        <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center" 
-                              x-text="cartCount"></span>
-                    </button>
-                </div>
+                <button @click="cartOpen = true" class="relative p-2 hover:bg-gray-100 rounded-full transition">
+                    <i data-lucide="shopping-bag"></i>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center" 
+                          x-show="cartCount > 0" x-text="cartCount"></span>
+                </button>
             </div>
 
             <div class="flex items-center justify-between mt-2 pt-2 border-t overflow-x-auto no-scrollbar gap-4">
-                <div class="flex gap-2 items-center">
-                    <select x-model="filterCategory" class="text-sm border-none bg-transparent font-medium focus:ring-0">
-                        <option value="">Todas las Categorías</option>
+                <div class="flex gap-4 items-center whitespace-nowrap">
+                    <select x-model="filterCategory" class="text-sm bg-transparent border-none focus:ring-0 font-medium">
+                        <option value="">Todas las categorías</option>
                         <template x-for="cat in categories" :key="cat">
                             <option :value="cat" x-text="cat"></option>
                         </template>
                     </select>
-                    <select x-model="sortBy" class="text-sm border-none bg-transparent font-medium focus:ring-0">
+                    <select x-model="sortBy" class="text-sm bg-transparent border-none focus:ring-0 font-medium">
                         <option value="default">Ordenar por</option>
-                        <option value="low">Precio: Menor a Mayor</option>
-                        <option value="high">Precio: Mayor a Menor</option>
+                        <option value="low">Precio: Bajo a Alto</option>
+                        <option value="high">Precio: Alto a Bajo</option>
                     </select>
                 </div>
-                <div class="flex bg-gray-100 p-1 rounded-lg shrink-0">
-                    <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-white shadow-sm' : ''" class="p-1 rounded"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
-                    <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-white shadow-sm' : ''" class="p-1 rounded ml-1"><i data-lucide="list" class="w-4 h-4"></i></button>
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-400'" class="p-1 rounded transition"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
+                    <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-400'" class="p-1 rounded ml-1 transition"><i data-lucide="list" class="w-4 h-4"></i></button>
                 </div>
             </div>
         </div>
@@ -73,34 +71,31 @@
         <template x-if="loading">
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <template x-for="i in 8">
-                    <div class="animate-pulse bg-white rounded-xl h-64"></div>
+                    <div class="bg-gray-200 animate-pulse rounded-2xl h-64 w-full"></div>
                 </template>
             </div>
         </template>
 
-        <div :class="viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'flex flex-col gap-4'">
+        <div :class="viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'space-y-4'">
             <template x-for="product in filteredProducts" :key="product.id">
                 <div @click="openProduct(product)" 
-                     class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer group flex"
-                     :class="viewMode === 'grid' ? 'flex-col' : 'flex-row h-40'">
+                     class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer border border-gray-100"
+                     :class="viewMode === 'grid' ? 'flex flex-col' : 'flex flex-row h-40 md:h-48'">
                     
-                    <div :class="viewMode === 'grid' ? 'w-full aspect-square' : 'w-40 shrink-0'">
-                        <img :src="product.imagen" :alt="product.nombre" class="w-full h-full object-cover transition group-hover:scale-105" loading="lazy">
+                    <div :class="viewMode === 'grid' ? 'w-full aspect-square' : 'w-40 md:w-56 shrink-0'" class="bg-white p-2">
+                        <img :src="product.imagen" :alt="product.nombre" class="w-full h-full object-contain mix-blend-multiply" loading="lazy">
                     </div>
 
-                    <div class="p-3 flex flex-col justify-between flex-grow">
-                        <div>
-                            <span class="text-[10px] uppercase tracking-widest text-gray-400" x-text="product.categoria"></span>
-                            <h3 class="font-bold text-sm line-clamp-2 leading-tight mb-1" x-text="product.nombre"></h3>
-                            <p class="text-xs text-gray-500 line-clamp-3 mb-2" x-show="viewMode === 'list'" x-text="product.descripcion"></p>
-                        </div>
-                        <div class="mt-auto">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-lg" :style="`color: ${config.primaryColor}`" 
-                                      x-text="config.currency + (product.precio_rebajado || product.precio_regular)"></span>
-                                <span x-show="product.precio_rebajado" class="text-xs line-through text-gray-400" 
-                                      x-text="config.currency + product.precio_regular"></span>
-                            </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <span class="text-[10px] font-bold uppercase text-gray-400 mb-1" x-text="product.categoria"></span>
+                        <h3 class="font-bold text-sm md:text-base line-clamp-2 leading-tight mb-2" x-text="product.nombre"></h3>
+                        <p x-show="viewMode === 'list'" class="text-xs text-gray-500 line-clamp-3 mb-4" x-text="product.descripcion"></p>
+                        
+                        <div class="mt-auto flex items-center gap-2">
+                            <span class="font-bold text-lg" :style="`color: ${config.primaryColor}`" 
+                                  x-text="config.currency + (product.precio_rebajado || product.precio_regular)"></span>
+                            <span x-show="product.precio_rebajado" class="text-xs line-through text-gray-400" 
+                                  x-text="config.currency + product.precio_regular"></span>
                         </div>
                     </div>
                 </div>
@@ -108,42 +103,42 @@
         </div>
 
         <div x-show="filteredProducts.length === 0 && !loading" class="text-center py-20">
-            <i data-lucide="search-x" class="mx-auto w-12 h-12 text-gray-300 mb-4"></i>
-            <p class="text-gray-500">No encontramos lo que buscas.</p>
+            <i data-lucide="package-search" class="mx-auto w-16 h-16 text-gray-200 mb-4"></i>
+            <p class="text-gray-500 font-medium">No encontramos productos con esos criterios.</p>
         </div>
     </main>
 
-    <div x-show="productModal" x-cloak class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div x-show="productModal" @click="productModal = false" x-transition.opacity class="absolute inset-0 bg-black/50"></div>
+    <div x-show="productModal" x-cloak class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+        <div x-show="productModal" x-transition.opacity @click="productModal = false" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <div x-show="productModal" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="translate-y-full"
-             x-transition:enter-end="translate-y-0"
-             class="relative bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="translate-y-0 sm:scale-100"
+             class="relative bg-white w-full max-w-3xl rounded-t-[2rem] sm:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
             
-            <button @click="productModal = false" class="absolute right-4 top-4 z-10 bg-white/80 rounded-full p-2">
-                <i data-lucide="x"></i>
+            <button @click="productModal = false" class="absolute right-6 top-6 z-10 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedProduct">
                 <div class="flex flex-col md:flex-row">
-                    <div class="md:w-1/2">
-                        <img :src="selectedProduct.imagen" class="w-full aspect-square object-cover">
+                    <div class="md:w-1/2 bg-white p-8">
+                        <img :src="selectedProduct.imagen" class="w-full aspect-square object-contain">
                     </div>
-                    <div class="md:w-1/2 p-6 flex flex-col">
-                        <span class="text-xs font-semibold uppercase text-gray-400 mb-2" x-text="selectedProduct.categoria"></span>
-                        <h2 class="text-2xl font-bold mb-2" x-text="selectedProduct.nombre"></h2>
-                        <div class="flex items-center gap-3 mb-4 text-xl">
-                            <span class="font-bold" :style="`color: ${config.primaryColor}`" x-text="config.currency + (selectedProduct.precio_rebajado || selectedProduct.precio_regular)"></span>
-                            <span x-show="selectedProduct.precio_rebajado" class="text-sm line-through text-gray-400" x-text="config.currency + selectedProduct.precio_regular"></span>
+                    <div class="md:w-1/2 p-8 flex flex-col">
+                        <span class="text-xs font-bold text-gray-400 uppercase mb-2" x-text="selectedProduct.categoria"></span>
+                        <h2 class="text-2xl font-black mb-4 leading-tight" x-text="selectedProduct.nombre"></h2>
+                        <div class="flex items-baseline gap-3 mb-6">
+                            <span class="text-3xl font-bold" :style="`color: ${config.primaryColor}`" x-text="config.currency + (selectedProduct.precio_rebajado || selectedProduct.precio_regular)"></span>
+                            <span x-show="selectedProduct.precio_rebajado" class="text-lg line-through text-gray-400" x-text="config.currency + selectedProduct.precio_regular"></span>
                         </div>
-                        <p class="text-gray-600 text-sm mb-6 leading-relaxed" x-text="selectedProduct.descripcion"></p>
+                        <p class="text-gray-600 text-sm mb-8 leading-relaxed" x-text="selectedProduct.descripcion"></p>
                         
                         <button @click="addToCart(selectedProduct)" 
-                                class="mt-auto w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2"
+                                class="mt-auto w-full py-4 rounded-2xl font-bold text-white shadow-lg shadow-purple-200 flex items-center justify-center gap-3 transition active:scale-95"
                                 :style="`background-color: ${config.primaryColor}`">
                             <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                            Agregar al carrito
+                            Añadir al carrito
                         </button>
                     </div>
                 </div>
@@ -152,130 +147,143 @@
     </div>
 
     <div x-show="cartOpen" x-cloak class="fixed inset-0 z-[70] overflow-hidden">
-        <div @click="cartOpen = false" class="absolute inset-0 bg-black/50 transition-opacity"></div>
+        <div @click="cartOpen = false" x-transition.opacity class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
         <div class="absolute inset-y-0 right-0 max-w-full flex">
-            <div x-show="cartOpen" x-transition:enter="translate-x-full" x-transition:enter-end="translate-x-0" 
-                 class="w-screen max-w-md bg-white shadow-xl flex flex-col">
-                <div class="p-4 border-b flex justify-between items-center">
-                    <h2 class="text-lg font-bold">Tu Carrito</h2>
-                    <button @click="cartOpen = false"><i data-lucide="x"></i></button>
+            <div x-show="cartOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                 class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-black">Mi Pedido</h2>
+                    <button @click="cartOpen = false" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x"></i></button>
                 </div>
-                <div class="flex-grow overflow-y-auto p-4">
+                <div class="flex-grow overflow-y-auto p-6 space-y-6">
                     <template x-for="item in cart" :key="item.id">
-                        <div class="flex gap-4 mb-4 border-b pb-4">
-                            <img :src="item.imagen" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex gap-4">
+                            <img :src="item.imagen" class="w-20 h-20 object-contain bg-gray-50 rounded-xl">
                             <div class="flex-grow">
-                                <h4 class="font-bold text-sm" x-text="item.nombre"></h4>
-                                <p class="text-sm font-bold" x-text="config.currency + (item.precio_rebajado || item.precio_regular)"></p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <button @click="updateQty(item.id, -1)" class="w-8 h-8 border rounded-full">-</button>
-                                    <span x-text="item.qty"></span>
-                                    <button @click="updateQty(item.id, 1)" class="w-8 h-8 border rounded-full">+</button>
+                                <h4 class="font-bold text-sm line-clamp-1" x-text="item.nombre"></h4>
+                                <p class="text-sm font-bold mt-1" :style="`color: ${config.primaryColor}`" x-text="config.currency + (item.precio_rebajado || item.precio_regular)"></p>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <button @click="updateQty(item.id, -1)" class="w-7 h-7 border rounded-full flex items-center justify-center hover:bg-gray-50">-</button>
+                                    <span class="font-bold text-sm" x-text="item.qty"></span>
+                                    <button @click="updateQty(item.id, 1)" class="w-7 h-7 border rounded-full flex items-center justify-center hover:bg-gray-50">+</button>
                                 </div>
                             </div>
-                            <button @click="removeFromCart(item.id)" class="text-red-400"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                            <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                         </div>
                     </template>
-                    <div x-show="cart.length === 0" class="text-center py-10 text-gray-400">
-                        El carrito está vacío
+                    <div x-show="cart.length === 0" class="text-center py-20">
+                        <i data-lucide="shopping-cart" class="w-12 h-12 mx-auto text-gray-200 mb-2"></i>
+                        <p class="text-gray-400">Tu carrito está vacío</p>
                     </div>
                 </div>
-                <div class="p-4 border-t bg-gray-50">
-                    <div class="flex justify-between text-xl font-bold mb-4">
-                        <span>Total:</span>
-                        <span x-text="config.currency + cartTotal"></span>
+                <div class="p-6 bg-gray-50 border-t">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-gray-500 font-medium">Total estimado:</span>
+                        <span class="text-2xl font-black" x-text="config.currency + cartTotal"></span>
                     </div>
                     <button @click="sendWhatsApp" :disabled="cart.length === 0"
-                            class="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-50">
-                        Confirmar pedido por WhatsApp
+                            class="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-lg shadow-green-100">
+                        <i data-lucide="send"></i>
+                        Enviar por WhatsApp
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="bg-white border-t py-10">
+    <footer class="bg-white py-12 border-t">
         <div class="container mx-auto px-4 text-center">
-            <h2 class="font-bold text-xl mb-4" x-text="config.name"></h2>
-            <div class="flex justify-center gap-6 mb-6 text-gray-600">
-                <template x-if="config.instagram">
-                    <a :href="config.instagram" target="_blank" class="hover:text-pink-500"><i data-lucide="instagram"></i></a>
-                </template>
-                <template x-if="config.facebook">
-                    <a :href="config.facebook" target="_blank" class="hover:text-blue-600"><i data-lucide="facebook"></i></a>
-                </template>
-                <template x-if="config.tiktok">
-                    <a :href="config.tiktok" target="_blank" class="hover:text-black"><i data-lucide="music-2"></i></a>
-                </template>
+            <div class="flex justify-center gap-6 mb-8">
+                <a :href="config.instagram" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-600 transition"><i data-lucide="instagram"></i></a>
+                <a :href="config.facebook" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i data-lucide="facebook"></i></a>
+                <a :href="config.tiktok" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-900 hover:text-white transition"><i data-lucide="music-2"></i></a>
             </div>
-            <p class="text-sm text-gray-400">© 2024 Todos los derechos reservados.</p>
+            <p class="font-bold text-gray-900" x-text="config.name"></p>
+            <p class="text-xs text-gray-400 mt-2">Versión <span x-text="config.version"></span></p>
         </div>
     </footer>
 
     <script>
         function shopApp() {
             return {
-                // CONFIGURACIÓN CENTRALIZADA
                 config: {
-                    name: 'Kativa Carteras',
-                    csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS697z-T47u3v48YvK5L3b9z_T46p-U3Y-I5u4X-7R_S_C-Xv6Z6Z/pub?output=csv', // URL de ejemplo o real
-                    primaryColor: '#8b5cf6',
-                    logo: 'https://cdn-icons-png.flaticon.com/512/3050/3050186.png',
+                    name: 'Carteras Premium',
+                    csvUrl: 'URL_DE_TU_GOOGLE_SHEETS_AQUI', 
+                    primaryColor: '#7c3aed',
+                    logo: 'https://cdn-icons-png.flaticon.com/512/2904/2904944.png',
                     currency: 'S/ ',
                     whatsapp: '51900000000',
                     instagram: '#',
                     facebook: '#',
                     tiktok: '#',
-                    version: '1.0.4'
+                    version: '1.2.0'
                 },
 
                 loading: true,
                 products: [],
+                categories: [],
                 searchQuery: '',
                 filterCategory: '',
                 sortBy: 'default',
-                viewMode: localStorage.getItem('viewMode') || 'grid',
+                viewMode: localStorage.getItem('viewMode_kativa') || 'grid',
                 cart: JSON.parse(localStorage.getItem('cart_kativa')) || [],
                 cartOpen: false,
                 productModal: false,
                 selectedProduct: null,
                 headerVisible: true,
                 lastScroll: 0,
-                categories: [],
 
                 async init() {
-                    this.fetchData();
+                    await this.fetchData();
                     lucide.createIcons();
-                    this.$watch('viewMode', val => localStorage.setItem('viewMode', val));
-                    this.$watch('cart', val => localStorage.setItem('cart_kativa', JSON.stringify(val)), { deep: true });
+                    this.$watch('viewMode', val => localStorage.setItem('viewMode_kativa', val));
+                    this.$watch('cart', val => {
+                        localStorage.setItem('cart_kativa', JSON.stringify(val));
+                        setTimeout(() => lucide.createIcons(), 10);
+                    }, { deep: true });
                 },
 
                 async fetchData() {
                     this.loading = true;
-                    try {
-                        // Implementación de Cache cada hora
-                        const cacheKey = 'shop_data_cache';
-                        const cached = localStorage.getItem(cacheKey);
-                        const now = new Date().getTime();
+                    const cacheKey = `kativa_cache_${this.config.version}`;
+                    const cached = localStorage.getItem(cacheKey);
+                    const now = new Date().getTime();
 
-                        if (cached) {
-                            const parsed = JSON.parse(cached);
-                            if (now - parsed.time < 3600000) { // 1 hora
-                                this.setProducts(parsed.data);
-                                return;
-                            }
+                    // Intentar usar caché (1 hora)
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        if (now - parsed.time < 3600000) {
+                            this.setProducts(parsed.data);
+                            this.loading = false;
+                            return;
                         }
+                    }
 
-                        // Carga real (Simulación con fallback para demostración si el CSV no existe)
-                        const response = await fetch(this.config.csvUrl + '&v=' + this.config.version);
-                        const text = await response.text();
-                        const data = this.parseCSV(text);
-                        
-                        localStorage.setItem(cacheKey, JSON.stringify({ time: now, data: data }));
-                        this.setProducts(data);
+                    try {
+                        // Intentar Google Sheets
+                        if (this.config.csvUrl.includes("docs.google.com")) {
+                            const response = await fetch(this.config.csvUrl);
+                            const text = await response.text();
+                            const data = this.parseCSV(text);
+                            this.saveAndSet(data, cacheKey, now);
+                        } else {
+                            throw new Error("No Google Sheet URL");
+                        }
                     } catch (e) {
-                        console.error("Error cargando datos", e);
-                        // Fallback opcional aquí
+                        console.log("Cargando FakeStoreAPI por defecto...");
+                        // FALLBACK OBLIGATORIO A FAKESTOREAPI
+                        const res = await fetch('https://fakestoreapi.com/products/category/jewelery');
+                        const json = await res.json();
+                        const mapped = json.map(p => ({
+                            id: p.id,
+                            nombre: p.title,
+                            precio_regular: p.price * 3.7, // Conversión simple a S/
+                            precio_rebajado: (p.price * 3.7 * 0.8).toFixed(2),
+                            categoria: "Carteras de Gala",
+                            descripcion: p.description,
+                            imagen: p.image
+                        }));
+                        this.saveAndSet(mapped, cacheKey, now);
                     } finally {
                         this.loading = false;
                         setTimeout(() => lucide.createIcons(), 100);
@@ -283,14 +291,22 @@
                 },
 
                 parseCSV(text) {
-                    const lines = text.split('\n');
+                    const lines = text.trim().split('\n');
                     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
                     return lines.slice(1).map((line, index) => {
-                        const cols = line.split(',');
+                        const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                         let obj = { id: index };
-                        headers.forEach((h, i) => obj[h] = cols[i]?.trim());
+                        headers.forEach((h, i) => {
+                            let val = cols[i]?.trim().replace(/^"|"$/g, '');
+                            obj[h] = (h.includes('precio')) ? parseFloat(val) : val;
+                        });
                         return obj;
-                    }).filter(p => p.nombre);
+                    });
+                },
+
+                saveAndSet(data, key, time) {
+                    localStorage.setItem(key, JSON.stringify({ time, data }));
+                    this.setProducts(data);
                 },
 
                 setProducts(data) {
@@ -299,48 +315,42 @@
                 },
 
                 get filteredProducts() {
-                    let filtered = this.products.filter(p => {
-                        const query = this.searchQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let items = this.products.filter(p => {
+                        const search = this.searchQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         const name = p.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         const desc = p.descripcion.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        const matchesSearch = name.includes(query) || desc.includes(query);
-                        const matchesCat = this.filterCategory === '' || p.categoria === this.filterCategory;
-                        return matchesSearch && matchesCat;
+                        return (name.includes(search) || desc.includes(search)) && 
+                               (this.filterCategory === '' || p.categoria === this.filterCategory);
                     });
-
-                    if (this.sortBy === 'low') filtered.sort((a, b) => (a.precio_rebajado || a.precio_regular) - (b.precio_rebajado || b.precio_regular));
-                    if (this.sortBy === 'high') filtered.sort((a, b) => (b.precio_rebajado || b.precio_regular) - (a.precio_rebajado || a.precio_regular));
-                    
-                    return filtered;
+                    if (this.sortBy === 'low') items.sort((a,b) => (a.precio_rebajado || a.precio_regular) - (b.precio_rebajado || b.precio_regular));
+                    if (this.sortBy === 'high') items.sort((a,b) => (b.precio_rebajado || b.precio_regular) - (a.precio_rebajado || a.precio_regular));
+                    return items;
                 },
 
                 handleScroll() {
-                    const currentScroll = window.pageYOffset;
-                    this.headerVisible = currentScroll < this.lastScroll || currentScroll < 100;
-                    this.lastScroll = currentScroll;
+                    let st = window.pageYOffset || document.documentElement.scrollTop;
+                    this.headerVisible = st < this.lastScroll || st < 50;
+                    this.lastScroll = st <= 0 ? 0 : st;
                 },
 
-                openProduct(product) {
-                    this.selectedProduct = product;
+                openProduct(p) {
+                    this.selectedProduct = p;
                     this.productModal = true;
                     setTimeout(() => lucide.createIcons(), 50);
                 },
 
-                addToCart(product) {
-                    const existing = this.cart.find(i => i.id === product.id);
-                    if (existing) {
-                        existing.qty++;
-                    } else {
-                        this.cart.push({ ...product, qty: 1 });
-                    }
+                addToCart(p) {
+                    const exists = this.cart.find(i => i.id === p.id);
+                    if (exists) exists.qty++;
+                    else this.cart.push({ ...p, qty: 1 });
                     this.productModal = false;
                     this.cartOpen = true;
                 },
 
-                updateQty(id, delta) {
+                updateQty(id, d) {
                     const item = this.cart.find(i => i.id === id);
                     if (item) {
-                        item.qty += delta;
+                        item.qty += d;
                         if (item.qty <= 0) this.removeFromCart(id);
                     }
                 },
@@ -349,22 +359,14 @@
                     this.cart = this.cart.filter(i => i.id !== id);
                 },
 
-                get cartCount() {
-                    return this.cart.reduce((sum, item) => sum + item.qty, 0);
-                },
-
-                get cartTotal() {
-                    return this.cart.reduce((sum, item) => sum + ((item.precio_rebajado || item.precio_regular) * item.qty), 0).toFixed(2);
-                },
+                get cartCount() { return this.cart.reduce((s, i) => s + i.qty, 0); },
+                get cartTotal() { return this.cart.reduce((s, i) => s + ((i.precio_rebajado || i.precio_regular) * i.qty), 0).toFixed(2); },
 
                 sendWhatsApp() {
-                    let message = `*Nuevo Pedido - ${this.config.name}*\n--------------------------\n`;
-                    this.cart.forEach(item => {
-                        message += `• ${item.qty}x ${item.nombre} - ${this.config.currency}${item.precio_rebajado || item.precio_regular}\n`;
-                    });
-                    message += `--------------------------\n*Total: ${this.config.currency}${this.cartTotal}*`;
-                    const url = `https://api.whatsapp.com/send?phone=${this.config.whatsapp}&text=${encodeURIComponent(message)}`;
-                    window.open(url, '_blank');
+                    let msg = `*Pedido - ${this.config.name}*\n\n`;
+                    this.cart.forEach(i => msg += `• ${i.qty}x ${i.nombre} (${this.config.currency}${i.precio_rebajado || i.precio_regular})\n`);
+                    msg += `\n*Total: ${this.config.currency}${this.cartTotal}*`;
+                    window.open(`https://api.whatsapp.com/send?phone=${this.config.whatsapp}&text=${encodeURIComponent(msg)}`, '_blank');
                 }
             }
         }
